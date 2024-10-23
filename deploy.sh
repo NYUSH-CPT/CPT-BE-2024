@@ -18,6 +18,7 @@ else
     echo "Container cpt-be-crontab does not exist. Creating a new one."
 fi
 
+
 sleep 3
 
 # Start a new container with the latest image
