@@ -170,7 +170,6 @@ def login(request):
 @catch_exceptions
 def qualtrics_submission(request):
     body = json.loads(request.body)
-    
     keys = {"invalid", "surveyDay", "uuid", "responseId"}
     if any(k not in body for k in keys):
         return Response({"status": "Fail", "message": "无效问卷"}, status=status.HTTP_400_BAD_REQUEST) 
@@ -178,15 +177,17 @@ def qualtrics_submission(request):
     day = body["surveyDay"]
     isvalid = "False" if body['invalid'] == 1 else "True"
     responseId =  body["responseId"]
+    uuid = body['uuid']
     
-    if day == 0 and 'phoneNumber' not in body:
+    if (day == 0 and 'phoneNumber' not in body) or not uuid:
         return Response({"status": "Fail", "message": "无效问卷"}, status=status.HTTP_400_BAD_REQUEST) 
             
     if day == 0:
         phoneNumber = encryptPhoneNumber(body["phoneNumber"])
         if isvalid == "True":
-            if not Whitelist.objects.filter(uuid=body['uuid']).exists():
-                whitelist = Whitelist.objects.create(phoneNumber=phoneNumber, uuid=body['uuid'], survey0=responseId)
+            if not Whitelist.objects.filter(phoneNumber=encryptPhoneNumber(phoneNumber)).exists() \
+                and not Whitelist.objects.filter(uuid=encryptPhoneNumber(uuid)).exists():
+                whitelist = Whitelist.objects.create(phoneNumber=phoneNumber, uuid=uuid, survey0=responseId)
                 whitelist.save()
             else:
                 return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
@@ -196,11 +197,11 @@ def qualtrics_submission(request):
             setattr(webUser, f"survey{day}", responseId)
             setattr(webUser, f"survey{day}IsValid", isvalid)
             if day == 1:
-                currentDay = 1.1
-            elif day == 23:
-                currentDay = 39
-            elif day == 99:
-                currentDay = 100
+                if webUser.group == "Waitlist": currentDay = 23
+                else: currentDay = 1.1
+            elif day == 23: currentDay = 39
+            elif day == 39: currentDay = 99
+            elif day == 99: currentDay = 100
             webUser.currentDay = max(webUser.currentDay, currentDay)
             webUser.save()
         except WebUser.DoesNotExist:

@@ -204,9 +204,9 @@ LOGGING = {
 # Crontab
 
 CRONJOBS = [
-    ('0 8 * * *', 'core.tasks.launch_tasks', [8], {}, '>> /app/log.txt'),
-    ('0 20 * * *', 'core.tasks.launch_tasks', [20], {}, '>> /app/log.txt'),
-    ('* * * * *', 'core.tasks.test_tasks', [21], {}, '>> /app/log.txt')
+    # ('0 8 * * *', 'core.tasks.launch_tasks', [8], {}, '>> /app/log.txt'),
+    # ('0 20 * * *', 'core.tasks.launch_tasks', [20], {}, '>> /app/log.txt'),
+    # ('* * * * *', 'core.tasks.test_tasks', [21], {}, '>> /app/log.txt')
 ]
 
 TIME_ZONE = 'Asia/Hong_Kong'
