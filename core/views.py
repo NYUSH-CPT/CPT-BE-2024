@@ -185,8 +185,8 @@ def qualtrics_submission(request):
     if day == 0:
         phoneNumber = encryptPhoneNumber(body["phoneNumber"])
         if isvalid == "True":
-            if not Whitelist.objects.filter(phoneNumber=encryptPhoneNumber(phoneNumber)).exists() \
-                and not Whitelist.objects.filter(uuid=encryptPhoneNumber(uuid)).exists():
+            if not Whitelist.objects.filter(phoneNumber=phoneNumber).exists() \
+                and not Whitelist.objects.filter(uuid=uuid).exists():
                 whitelist = Whitelist.objects.create(phoneNumber=phoneNumber, uuid=uuid, survey0=responseId)
                 whitelist.save()
             else:
