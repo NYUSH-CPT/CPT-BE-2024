@@ -32,8 +32,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = [".ngrok-free.app", "localhost", "127.0.0.1"]
 
-CSRF_TRUSTED_ORIGINS = ["https://*.ngrok-free.app"]
-
 # Application definition
 
 #
@@ -209,4 +207,5 @@ CRONJOBS = [
     # ('* * * * *', 'core.tasks.test_tasks', [21], {}, '>> /app/log.txt')
 ]
 
+USE_TZ = True
 TIME_ZONE = 'Asia/Hong_Kong'

@@ -6,5 +6,5 @@
 # * * * * * cd /app && python manage.py shell -c "from core.tasks import test_tasks; test_tasks(0)"
 
 # Django Production
-0 8 * * * cd /app && python3 manage.py shell -c "from core.tasks import launch_tasks; launch_tasks(8)"
-0 20 * * * cd /app && python3 manage.py shell -c "from core.tasks import launch_tasks; launch_tasks(20)"
+0 0 * * * cd /app && python3 manage.py shell -c "from core.tasks import launch_tasks; launch_tasks(8)"
+0 12 * * * cd /app && python3 manage.py shell -c "from core.tasks import launch_tasks; launch_tasks(20)"

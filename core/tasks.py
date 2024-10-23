@@ -43,7 +43,6 @@ def launch_tasks(time: int):
                     log.save()
                 else: 
                     log = Log.objects.create(
-                        user=user,
                         log=f"Message sent failed. Error message: " + res['msg']
                     )
                     log.save()
@@ -61,7 +60,13 @@ def launch_tasks(time: int):
                 # check criteria
                 if 'not_banned' in sub_task['criteria'] and not banTags:
                     if 'task_not_done' in sub_task['criteria']:
-                        if user.currentDay >= currentDay:
+                        if sub_task['days'] == 1 and user.group == 'Waitlist':
+                            if user.currentDay >= 1.1:
+                                continue
+                        elif user.currentDay >= currentDay+1:
+                            continue
+                    if 'survey_not_done' in sub_task['criteria']:
+                        if user.currentDay >= currentDay - 6:
                             continue
                     if 'has_unsent_quality_check_fail_msg' in sub_task['criteria']:
                         skip = True
@@ -92,7 +97,7 @@ def launch_tasks(time: int):
                 
                 else: 
                     continue
-                    
+                
                 res = blued_msg.send(user.uuid, sub_task["id"])
                 if res['code'] == 200:
                     log = Log.objects.create(

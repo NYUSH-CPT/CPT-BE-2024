@@ -8,7 +8,7 @@ from django.utils import timezone
 # Register your models here.
 admin_fieldsets = [
     ("User Info and Access Status", {
-        'fields': ('user', 'whitelist', 'uuid', 'sms', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banReason', 'banReasonInternal', 'banNotified', 'trainCompleteNotified', 'surveyCompleteNotified')
+        'fields': ('user', 'whitelist', 'uuid', 'sms', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReason', 'banReasonInternal', 'banNotified', 'trainCompleteNotified', 'surveyCompleteNotified')
     }),
     ("Writing  1", {
         'fields': ( 'writing1', 'writing1QualityCheck', 'writing1QualityCheckRA', 'writing1QualityCheckCS', 'writing1QualityCheckNotified')
@@ -38,7 +38,7 @@ admin_fieldsets = [
 
 ra_fieldsets = [
     ("User Info and Access Status", {
-        'fields': ('uuid', 'whitelist', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banReason', 'banReasonInternal')
+        'fields': ('uuid', 'whitelist', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReason', 'banReasonInternal')
     }),
     ("Writing  1", {
         'fields': ( 'writing1', 'writing1QualityCheck', 'writing1QualityCheckRA')
@@ -123,7 +123,7 @@ class WebUserAdmin(admin.ModelAdmin):
         self.readonly_fields = [
             'writing1QualityCheck', 'writing4QualityCheck', 'writing5QualityCheck', 'writing6QualityCheck', 'writing8QualityCheck', 
             'writing4Viewed', 'writing5Viewed', 'feedback6Viewed', 'feedback8Viewed', 
-            'banReasonInternal', "gameBreakFlag", "gameFinished", 'banFlag'
+            'banReasonInternal', "gameBreakFlag", "gameFinished", 'banFlag', 'banDay',
         ]
         if request.user.is_superuser:
             self.fieldsets = admin_fieldsets
@@ -132,7 +132,7 @@ class WebUserAdmin(admin.ModelAdmin):
             if len(gorup) > 0 and gorup[0].name == "RA":
                 self.fieldsets = ra_fieldsets
                 self.readonly_fields += [
-                    'user', 'uuid', 'whitelist', 'sms', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banReasonInternal', 'user'
+                    'user', 'uuid', 'whitelist', 'sms', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReasonInternal', 'user'
                     "gameBreakFlag", "gameFinished", 
                     "gameData",
                     'writing1', 'writing4', 'writing5', 'writing6', 'writing8'

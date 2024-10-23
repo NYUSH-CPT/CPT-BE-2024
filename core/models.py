@@ -24,6 +24,7 @@ class WebUser(models.Model):
     banReason = models.TextField(max_length=200, null=True, blank=True, help_text="Reason for banning user, visible to user")
     banReasonInternal = models.TextField(max_length=500, null=True, blank=True, help_text="Reason for banning user, auto generated")
     banNotified = models.BooleanField(default=False, help_text="Auto set to true when user is notified")
+    banDay = models.FloatField(default=-1, help_text="The task progress when the user is banned at")
 
     writing1 = models.JSONField(default=dict, null=True, blank=True)
     writing1QualityCheck = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Auto generated quality check")
@@ -104,17 +105,29 @@ class WebUser(models.Model):
             if getattr(self, f'writing{day}QualityCheck') == "False":
                 invalid_count += 1
         return invalid_count
+    
+    def update_date_after_survey_due(self):
+        startDate = datetime.combine(self.startDate, datetime.min.time()).date() 
+        now = datetime.now().date()
+        survey_days = {23: 39, 39: 99, 99: 100}
+        for day, next_day in survey_days.items():
+            if (now - startDate).days > day + 6 and self.currentDay == day:
+                setattr(self, f'survey{day}IsValid', "False")
+                setattr(self, f'survey{day}', "Overdue")
+                self.currentDay = next_day
+
+        self.save()
         
     def validity_check(self):
         banReasons = []
         banTags = []
-        
         # Criteria 1: Qualtrics Survey
+        self.update_date_after_survey_due()
         if self.survey1IsValid == "False":
             banReasons.append("前测问卷无效")
             banTags.append("pre_survey_invalid")
         if self.survey23IsValid == "False" and self.survey39IsValid == "False" and self.survey99IsValid == "False":
-            banReasons.append("后侧问卷无效")
+            banReasons.append("后测问卷无效")
             banTags.append("post_survey_invalid")
         if self.group in ["Exp1", "Exp2"]:
             # Criteria 2: Writing Quality
@@ -148,10 +161,13 @@ class WebUser(models.Model):
             
         if len(banReasons) > 0:
             self.banReasonInternal = '；'.join(banReasons) + f'[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}]'
-            self.banFlag = True
+            if not self.banFlag:
+                self.banFlag = True
+                self.banDay = self.currentDay
         else:
             self.banReasonInternal = ''
             self.banFlag = False
+            self.banDay = -1
 
         self.save()
         return banReasons, banTags
@@ -188,7 +204,7 @@ class Log(models.Model):
     log = models.TextField()
 
     def __str__(self) -> str:
-        return f'Log [{self.id}] | {self.time.strftime("%Y-%m-%d %H:%M")} | {self.log}'
+        return f'Log [{self.id}] | {self.log}'
 
 class BannedLog(models.Model):
     
@@ -197,4 +213,4 @@ class BannedLog(models.Model):
     log = models.TextField()
     
     def __str__(self) -> str:
-        return f'BannedLog [{self.id}] | {self.time.strftime("%Y-%m-%d %H:%M")} | {self.user.uuid} | {self.log}'
+        return f'BannedLog [{self.id}] | {self.user.uuid} | {self.log}'
