@@ -29,6 +29,7 @@ def launch_tasks(time: int):
         if 'day_0' in sub_task['criteria']:
             for whitelist in Whitelist.objects.all():
                 currentDay = (datetime.now().date() - whitelist.startDate).days + 1
+                # print(whitelist.uuid, currentDay)
                 if currentDay != 0:
                     continue
                 if whitelist.group not in sub_task['groups']:
@@ -55,6 +56,7 @@ def launch_tasks(time: int):
                 if user.group not in sub_task['groups']:
                     continue
                 currentDay = (datetime.now().date() - user.startDate).days + 1
+                # print(user.uuid, currentDay)
                 if currentDay not in sub_task['days']:
                     continue
                 # check criteria
@@ -100,6 +102,7 @@ def launch_tasks(time: int):
                 
                 res = blued_msg.send(user.uuid, sub_task["id"])
                 if res['code'] == 200:
+                    # print(f"Message sent to {user.uuid} on task {sub_task['id']} successfully.")
                     log = Log.objects.create(
                         user=user,
                         log=f"Message sent to {user.uuid} on task {sub_task['id']} successfully."
