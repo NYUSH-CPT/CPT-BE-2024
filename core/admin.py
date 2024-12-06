@@ -137,7 +137,7 @@ class WebUserAdmin(admin.ModelAdmin):
                     "gameData",
                     'writing1', 'writing4', 'writing5', 'writing6', 'writing8'
                 ]
-            elif len(gorup) > 0 and gorup[0].name == "Counselors":
+            elif len(gorup) > 0 and gorup[0].name == "CS":
                 self.fieldsets = cs_filesets
                 self.readonly_fields += [
                     'uuid', 'group', 'startDate', 'currentDay',
