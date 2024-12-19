@@ -398,7 +398,7 @@ class Scenario(Node):
 
 
 class MiniGame(Node):
-    start_sentence = "欢迎来到菜鸟咨询师小游戏！在这个游戏里，您将扮演一名心理咨询专业的大一学生，在导师的带领下，为十六位性少数男性来访者解决他们的困扰。让我们开始吧!"
+    start_sentence = "欢迎来到小游戏！在这个游戏里，您将扮演一名心理咨询专业的大一学生，在导师的带领下，为十六位性少数男性来访者解决他们的困扰。让我们开始吧!"
 
     def __init__(self, current_node: Node, user: WebUser, name_list: List[str]):
         self.current_node = current_node
