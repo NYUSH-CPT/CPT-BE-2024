@@ -87,7 +87,7 @@ class WebUser(models.Model):
         self.gameFinished = False
         self.gameData = {}
         self.score = 0
-        self.save()
+        self.validity_check()
     
     def update_quality_check(self, day_attr, ra_check, cs_check):
         if ra_check == "False" and cs_check == "False":
@@ -155,7 +155,8 @@ class WebUser(models.Model):
                 banReasons.append("游戏得分不足61200 (60%)")
                 banTags.append("game_score_low")
         # Criteria 5: Manual ban
-        if self.banFlag and not self.banReason:
+        if not self.banFlag and self.banReason:
+            banReasons.append(self.banReason)
             banReasons.append("手动标记为不合格")
             
         if len(banReasons) > 0:
