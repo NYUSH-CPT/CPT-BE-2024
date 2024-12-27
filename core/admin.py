@@ -123,7 +123,7 @@ class WebUserAdmin(admin.ModelAdmin):
         self.readonly_fields = [
             'writing1QualityCheck', 'writing4QualityCheck', 'writing5QualityCheck', 'writing6QualityCheck', 'writing8QualityCheck', 
             'writing4Viewed', 'writing5Viewed', 'feedback6Viewed', 'feedback8Viewed', 
-            "gameBreakFlag", "gameFinished", 'banFlag', 'banDay',
+            "gameBreakFlag", "gameFinished", 'banFlag', 'banDay', 'banReason'
         ]
         if request.user.is_superuser:
             self.fieldsets = admin_fieldsets

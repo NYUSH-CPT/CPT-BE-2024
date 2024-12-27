@@ -154,10 +154,6 @@ class WebUser(models.Model):
             if self.gameFinished and self.score < 61200:
                 banReasons.append("游戏得分不足61200 (60%)")
                 banTags.append("game_score_low")
-        # Criteria 5: Manual ban
-        if not self.banFlag and self.banReason:
-            banReasons.append(self.banReason)
-            banReasons.append("手动标记为不合格")
             
         if len(banReasons) > 0:
             self.banReason = '；'.join(banReasons) + f'[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}]'
