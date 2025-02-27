@@ -11,7 +11,8 @@ class WebUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, help_text="Auth user")
     uuid = models.CharField(null=True, blank=True, max_length=200, help_text="Blued uuid")
     sms = models.CharField(null=True, blank=True, max_length=20)
-    phoneNumber = models.CharField(max_length=500, help_text="Encrypted phone number")
+    encryptedPhoneNumber = models.CharField(max_length=500, help_text="Encrypted phone number")
+    encryptedWeChat = models.CharField(max_length=500, help_text="Encrypted WeChat number")
     whitelist = models.OneToOneField("Whitelist", on_delete=models.CASCADE, related_name="webUser")
     
     group = models.TextField(choices=[("Exp1", "Exp1"), ("Exp2", "Exp2"), ("Waitlist", "Waitlist")], default="Null")
@@ -69,13 +70,13 @@ class WebUser(models.Model):
     gameData = models.JSONField(default=dict,null=True, blank=True)
     score = models.IntegerField(default=0)
     
-    survey1 = models.TextField(max_length=30, null=True, blank=True)
+    survey1 = models.CharField(max_length=30, null=True, blank=True)
     survey1IsValid = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
-    survey23 = models.TextField(max_length=30, null=True, blank=True)
+    survey23 = models.CharField(max_length=30, null=True, blank=True)
     survey23IsValid = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
-    survey39 = models.TextField(max_length=30, null=True, blank=True)
+    survey39 = models.CharField(max_length=30, null=True, blank=True)
     survey39IsValid = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
-    survey99 = models.TextField(max_length=30, null=True, blank=True)
+    survey99 = models.CharField(max_length=30, null=True, blank=True)
     survey99IsValid = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
     
     def __str__(self):
@@ -171,10 +172,11 @@ class WebUser(models.Model):
 
 class Whitelist(models.Model):
     
-    phoneNumber = models.CharField(max_length=500, help_text="Encypted phone number")
+    encryptedPhoneNumber = models.CharField(max_length=500, help_text="Encypted phone number")
+    encryptedWeChat = models.CharField(max_length=500, help_text="Encrypted WeChat number")
     uuid = models.CharField(max_length=200, help_text="Blued uuid")
     has_add_wechat = models.BooleanField(default=False, help_text="Please set it to true after adding user's wechat")
-    survey0 = models.TextField(max_length=30, null=True, blank=True)
+    survey0 = models.CharField(max_length=30, null=True, blank=True)
     group = models.TextField(choices=[("Exp1", "Exp1"), ("Exp2", "Exp2"), ("Waitlist", "Waitlist")], default=None, null=True, blank=True)
     startDate = models.DateField(null=True, blank=True, help_text="Experiment start date")
     
@@ -210,3 +212,17 @@ class BannedLog(models.Model):
     
     def __str__(self) -> str:
         return f'BannedLog [{self.id}] | {self.user.uuid} | {self.log}'
+    
+
+class LSUser(models.Model):
+    
+    uuid = models.CharField(null=True, blank=True, max_length=200, help_text="Blued uuid")
+    encryptedPhoneNumber = models.CharField(max_length=500, help_text="Encrypted phone number")
+    encryptedQQ = models.CharField(max_length=500, help_text="Encrypted QQ number")
+    survey0 = models.CharField(max_length=30, null=True, blank=True)
+    
+    def __str__(self):
+        return f'{self.uuid}'
+
+    
+    
