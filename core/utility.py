@@ -13,7 +13,7 @@ import traceback
 
 sys.path.append(os.getcwd())
 os.environ['DJANGO_SETTINGS_MODULE'] = 'CPTBackend.settings'
-django.setup()
+# django.setup()
 
 load_dotenv()
 
@@ -36,7 +36,7 @@ def catch_exceptions(view_func):
     return wrapper
 
 key = b64decode(os.getenv('AES_KEY'))
-def encryptPhoneNumber(plaintext):
+def encrypt(plaintext):
     while len(plaintext) % 16 != 0:
         plaintext += ' '  # Padding with spaces
 
@@ -45,7 +45,7 @@ def encryptPhoneNumber(plaintext):
     ct = encryptor.update(plaintext.encode('utf-8')) + encryptor.finalize()
     return b64encode(ct).decode('utf-8') 
 
-def decryptPhoneNumber(ciphertext):
+def decrypt(ciphertext):
     ct = b64decode(ciphertext)
     cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
     decryptor = cipher.decryptor()

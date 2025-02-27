@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .models import WebUser, Whitelist
+from .models import WebUser, Whitelist, LSUser
 from .serializers import WebUserSerializer
 from .utility import *
 import json
@@ -110,10 +110,10 @@ def finishVideo(request):
 def handleSendSMSRequest(request):
     phoneNumber = json.loads(request.body)['phoneNumber']
     if len(phoneNumber)>8 and phoneNumber.isnumeric(): # 一般手机号长度 大于 8
-        encryptedPhoneNumber = encryptPhoneNumber(phoneNumber)
-        webUser = WebUser.objects.filter(phoneNumber=encryptedPhoneNumber).first()
+        encryptedPhoneNumber = encrypt(phoneNumber)
+        webUser = WebUser.objects.filter(encryptedPhoneNumber=encryptedPhoneNumber).first()
         if not webUser:
-            whitelist = Whitelist.objects.filter(phoneNumber=encryptedPhoneNumber).first()
+            whitelist = Whitelist.objects.filter(encryptedPhoneNumber=encryptedPhoneNumber).first()
             if not whitelist:
                 return Response({"error": "用户信息未加入白名单，请联系管理员"}, status=status.HTTP_404_NOT_FOUND)
             if not whitelist.has_add_wechat:
@@ -123,7 +123,9 @@ def handleSendSMSRequest(request):
             user = User.objects.filter(username=whitelist.uuid).first()
             if not user:
                 user = User.objects.create_user(username=whitelist.uuid)
-            webUser = WebUser.objects.create(user=user, whitelist=whitelist, phoneNumber=encryptedPhoneNumber, group=whitelist.group, uuid=whitelist.uuid, startDate=whitelist.startDate)
+            webUser = WebUser.objects.create(user=user, whitelist=whitelist, 
+                                             encryptedPhoneNumber=encryptedPhoneNumber, encryptedWeChat=whitelist.encryptedWeChat,
+                                             group=whitelist.group, uuid=whitelist.uuid, startDate=whitelist.startDate,)
         generated_passcode = str(random.randint(1000, 9999))
         response = SMS.SmsService.send(phoneNumber, generated_passcode)
         if response['statusCode'] == 200:
@@ -147,7 +149,7 @@ def login(request):
 
     if len(phoneNumber) > 8 and phoneNumber.isnumeric() and len(passcode) == 4 and passcode.isnumeric():
         try:
-            whitelist = Whitelist.objects.get(phoneNumber=encryptPhoneNumber(phoneNumber))
+            whitelist = Whitelist.objects.get(encryptedPhoneNumber=encrypt(phoneNumber))
             user = User.objects.get(username=whitelist.uuid)
             if user.check_password(passcode):
                 refresh = RefreshToken.for_user(user)
@@ -179,33 +181,33 @@ def qualtrics_submission(request):
     responseId =  body["responseId"]
     uuid = body['uuid']
     
-    if (day == 0 and 'phoneNumber' not in body) or not uuid:
-        return Response({"status": "Fail", "message": "无效问卷"}, status=status.HTTP_400_BAD_REQUEST) 
+    # if (day == 0 and 'phoneNumber' not in body) or not uuid:
+    #     return Response({"status": "Fail", "message": "无效问卷"}, status=status.HTTP_400_BAD_REQUEST) 
             
-    if day == 0:
-        phoneNumber = encryptPhoneNumber(body["phoneNumber"])
-        if isvalid == "True":
-            if not Whitelist.objects.filter(phoneNumber=phoneNumber).exists() \
-                and not Whitelist.objects.filter(uuid=uuid).exists():
-                whitelist = Whitelist.objects.create(phoneNumber=phoneNumber, uuid=uuid, survey0=responseId)
-                whitelist.save()
-            else:
-                return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        try:
-            webUser = WebUser.objects.get(uuid=body['uuid'])
-            setattr(webUser, f"survey{day}", responseId)
-            setattr(webUser, f"survey{day}IsValid", isvalid)
-            if day == 1:
-                if webUser.group == "Waitlist": currentDay = 23
-                else: currentDay = 1.1
-            elif day == 23: currentDay = 39
-            elif day == 39: currentDay = 99
-            elif day == 99: currentDay = 100
-            webUser.currentDay = max(webUser.currentDay, currentDay)
-            webUser.save()
-        except WebUser.DoesNotExist:
-            return Response({"status": "Fail", "message": "用户不存在"}, status=status.HTTP_400_BAD_REQUEST)
+    # if day == 0:
+    #     phoneNumber = encrypt(body["phoneNumber"])
+    #     if isvalid == "True":
+    #         if not Whitelist.objects.filter(encryptedPhoneNumber=phoneNumber).exists() \
+    #             and not Whitelist.objects.filter(uuid=uuid).exists():
+    #             whitelist = Whitelist.objects.create(encryptedPhoneNumber=phoneNumber, encryptedWeChat="", uuid=uuid, survey0=responseId)
+    #             whitelist.save()
+    #         else:
+    #             return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
+    # else:
+    try:
+        webUser = WebUser.objects.get(uuid=uuid)
+        setattr(webUser, f"survey{day}", responseId)
+        setattr(webUser, f"survey{day}IsValid", isvalid)
+        if day == 1:
+            if webUser.group == "Waitlist": currentDay = 23
+            else: currentDay = 1.1
+        elif day == 23: currentDay = 39
+        elif day == 39: currentDay = 99
+        elif day == 99: currentDay = 100
+        webUser.currentDay = max(webUser.currentDay, currentDay)
+        webUser.save()
+    except WebUser.DoesNotExist:
+        return Response({"status": "Fail", "message": "用户不存在"}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response({"status": "Success", "message": "成功提交"}, status=status.HTTP_200_OK)
 
@@ -214,6 +216,41 @@ def qualtrics_submission(request):
 @catch_exceptions
 def key(request):
     key = request.query_params.get("key")
-    if not Whitelist.objects.filter(uuid=key):
+    if not Whitelist.objects.filter(uuid=key) and not LSUser.objects.filter(uuid=key):
         return Response(status=status.HTTP_404_NOT_FOUND)
     return Response(status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@catch_exceptions
+def collect_info(request):
+    body = json.loads(request.body)
+    keys = {"QQ", "WeChat", "phoneNumber", 'uuid', "responseId"}
+    if any(k not in body for k in keys):
+        return Response({"status": "Fail", "message": "无效问卷"}, status=status.HTTP_400_BAD_REQUEST) 
+    
+    QQ = body["QQ"]
+    WeChat = body["WeChat"]
+    phoneNumber = body["phoneNumber"]
+    uuid = body["uuid"]
+    responseId = body["responseId"]
+    
+    if WeChat:
+        if not Whitelist.objects.filter(uuid=uuid).exists() and not LSUser.objects.filter(uuid=uuid).exists()\
+            and not Whitelist.objects.filter(encryptedPhoneNumber=encrypt(phoneNumber)).exists()\
+            and not Whitelist.objects.filter(encryptedWeChat=encrypt(WeChat)).exists():
+            whitelist = Whitelist.objects.create(uuid=uuid, encryptedPhoneNumber=encrypt(phoneNumber), encryptedWeChat=encrypt(WeChat), survey0=responseId)
+            whitelist.save()
+        else:
+            return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        if not Whitelist.objects.filter(uuid=uuid).exists() and not LSUser.objects.filter(uuid=uuid).exists()\
+            and not LSUser.objects.filter(encryptedPhoneNumber=encrypt(phoneNumber)).exists()\
+            and not LSUser.objects.filter(encryptedQQ=encrypt(QQ)).exists():
+            lsUser = LSUser.objects.create(uuid=uuid, encryptedPhoneNumber=encrypt(phoneNumber), encryptedQQ=encrypt(QQ), survey0=responseId)
+            lsUser.save()
+        else:
+            return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
+            
+    return Response({"status": "Success", "message": "成功提交"}, status=status.HTTP_200_OK)
+    
