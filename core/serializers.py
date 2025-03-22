@@ -14,6 +14,7 @@ class WebUserSerializer(serializers.ModelSerializer):
                 info_fields = [
                     'uuid', 'group', 'currentDay', 'startDate', 'banFlag', 'banReason', 'banDay', 'feedback6', 'feedback8',
                     'writing4Viewed', 'writing5Viewed', 'feedback6Viewed', 'feedback8Viewed', 
+                    'survey23', 'survey39', 'survey99',
                     'survey23IsValid', 'survey39IsValid', 'survey99IsValid',
                 ]
                 for field in set(self.fields) - set(info_fields):
