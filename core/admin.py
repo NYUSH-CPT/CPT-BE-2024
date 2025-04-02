@@ -4,6 +4,7 @@ from django.utils import timezone
 from core.utility import decrypt
 import csv
 from django.http import HttpResponse
+import os.path as path
 
 # Register your models here.
 admin_fieldsets = [
@@ -153,7 +154,7 @@ def set_startDate_4(modeladmin, request, queryset):
 
         
 class WebUserAdmin(admin.ModelAdmin):
-    actions = [reset_game]
+    actions = [reset_game, "export_to_csv"]
     
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
@@ -176,6 +177,41 @@ class WebUserAdmin(admin.ModelAdmin):
             return cs_fieldsets
         else:
             return []
+
+    def export_to_csv(self, request, queryset):
+
+        if not (request.user.is_superuser or request.user.groups.filter(name='LS').exists()):
+            self.message_user(
+                request, "You do not have permission to perform this action.", level='error')
+            return
+
+        # read fields for export
+        fields, names = [], []
+        with open(path.join(path.dirname(__file__), 'web_user_export_fields.csv'), 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            next(reader)  # Skip the first title line
+            for row in reader:
+                fields.append(row[0])
+                names.append(row[1])
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="web_user.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(names)
+
+        for obj in queryset:
+            row = []
+            for field in fields:
+                if field == "phoneNumber":
+                    row.append(decrypt(getattr(obj, field)))
+                elif field == "WeChat":
+                    row.append(decrypt(getattr(obj, field)))
+                else:
+                    row.append(getattr(obj, field))
+            writer.writerow(row)
+
+        return response
        
     def get_readonly_fields(self, request, obj=None):
         base_readonly_fields = [
