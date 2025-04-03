@@ -152,14 +152,55 @@ def set_startDate_4(modeladmin, request, queryset):
     days_later = timezone.now() + timezone.timedelta(days=4)
     queryset.update(startDate=days_later)
 
-        
-class WebUserAdmin(admin.ModelAdmin):
-    actions = [reset_game, "export_to_csv"]
+
+def export_to_csv_func(csv_file, output_file):
     
+    @admin.action(description="Export to CSV")
+    def _export_to_csv(modeladmin, request, queryset):
+
+        if not (request.user.is_superuser or request.user.groups.filter(name='LS').exists()):
+            modeladmin.message_user(
+                request, "You do not have permission to perform this action.", level='error')
+            return
+
+        # read fields for export
+        fields, names = [], []
+        with open(path.join(path.dirname(__file__), "csv_export", csv_file), 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            next(reader)  # Skip the first title line
+            for row in reader:
+                fields.append(row[0])
+                names.append(row[1])
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{output_file}"'
+
+        writer = csv.writer(response)
+        writer.writerow(names)
+
+        for obj in queryset:
+            row = []
+            for field in fields:
+                if field in {"encryptedPhoneNumber", "encryptedWeChat", "encryptedQQ"}:
+                    row.append(decrypt(getattr(obj, field)))
+                else:
+                    row.append(getattr(obj, field))
+            writer.writerow(row)
+
+        return response
+
+    return _export_to_csv
+
+
+class WebUserAdmin(admin.ModelAdmin):
+    export_to_csv = export_to_csv_func(
+        "web_user_export_fields.csv", "web_user.csv")
+    actions = [reset_game, export_to_csv]
+
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         obj.validity_check()
-        
+
     def phoneNumber(self, obj):
        return decrypt(obj.encryptedPhoneNumber)
 
@@ -178,41 +219,8 @@ class WebUserAdmin(admin.ModelAdmin):
         else:
             return []
 
-    def export_to_csv(self, request, queryset):
-
-        if not (request.user.is_superuser or request.user.groups.filter(name='LS').exists()):
-            self.message_user(
-                request, "You do not have permission to perform this action.", level='error')
-            return
-
-        # read fields for export
-        fields, names = [], []
-        with open(path.join(path.dirname(__file__), 'web_user_export_fields.csv'), 'r', encoding='utf-8') as f:
-            reader = csv.reader(f)
-            next(reader)  # Skip the first title line
-            for row in reader:
-                fields.append(row[0])
-                names.append(row[1])
-
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="web_user.csv"'
-
-        writer = csv.writer(response)
-        writer.writerow(names)
-
-        for obj in queryset:
-            row = []
-            for field in fields:
-                if field == "phoneNumber":
-                    row.append(decrypt(getattr(obj, field)))
-                elif field == "WeChat":
-                    row.append(decrypt(getattr(obj, field)))
-                else:
-                    row.append(getattr(obj, field))
-            writer.writerow(row)
-
         return response
-       
+
     def get_readonly_fields(self, request, obj=None):
         base_readonly_fields = [
             'uuid', 'group',
@@ -260,7 +268,10 @@ class WebUserAdmin(admin.ModelAdmin):
        
 
 class WhitelistAdmin(admin.ModelAdmin):
-    actions = [set_startDate_2, set_startDate_3, set_startDate_4]
+    export_to_csv = export_to_csv_func(
+        "whitelist_export_fields.csv", "whitelist.csv")
+    actions = [set_startDate_2, set_startDate_3,
+               set_startDate_4, export_to_csv]
     exclude = ('encryptedPhoneNumber', 'encryptedWeChat')
     
     def phoneNumber(self, obj):
@@ -311,29 +322,16 @@ class WhitelistAdmin(admin.ModelAdmin):
 class LSUserAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'phoneNumber', 'qq', 'survey0')
     readonly_fields = ('uuid', 'survey0', 'phoneNumber', 'qq')
-    actions = ['export_to_csv']
+    export_to_csv = export_to_csv_func(
+        "ls_user_export_fields.csv", "ls_user.csv")
+    actions = [export_to_csv]
     
     def phoneNumber(self, obj):
        return decrypt(obj.encryptedPhoneNumber)
 
     def qq(self, obj):
        return decrypt(obj.encryptedQQ)
-   
-    def export_to_csv(self, request, queryset):
-        if not (request.user.is_superuser or request.user.groups.filter(name='LS').exists()):
-            self.message_user(request, "You do not have permission to perform this action.", level='error')
-            return
 
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="ls_users_export.csv"'
-
-        writer = csv.writer(response)
-        writer.writerow(['uuid', 'Phone Number', 'QQ', 'ResponseId'])
-        
-        for obj in queryset:
-            writer.writerow([obj.uuid, self.phoneNumber(obj), self.qq(obj), obj.survey0])
-
-        return response
 
     def get_model_perms(self, request):
         if request.user.groups.filter(name='LS').exists() or request.user.is_superuser:
