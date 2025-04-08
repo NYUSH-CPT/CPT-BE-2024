@@ -86,7 +86,7 @@
     {
         "id": 11,
         "groups": ["Exp1", "Exp2", "Waitlist"],
-        "days": [24, 40, 100, 25, 41, 101, 27, 43, 103, 29, 45, 105],
+        "days": [24, 40, 100, 25, 41, 101, 27, 43, 103],
         "time": "8", 
         "criteria": ["not_banned", "survey_not_done"]
     },

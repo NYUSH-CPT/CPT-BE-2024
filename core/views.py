@@ -181,19 +181,6 @@ def qualtrics_submission(request):
     responseId =  body["responseId"]
     uuid = body['uuid']
     
-    # if (day == 0 and 'phoneNumber' not in body) or not uuid:
-    #     return Response({"status": "Fail", "message": "无效问卷"}, status=status.HTTP_400_BAD_REQUEST) 
-            
-    # if day == 0:
-    #     phoneNumber = encrypt(body["phoneNumber"])
-    #     if isvalid == "True":
-    #         if not Whitelist.objects.filter(encryptedPhoneNumber=phoneNumber).exists() \
-    #             and not Whitelist.objects.filter(uuid=uuid).exists():
-    #             whitelist = Whitelist.objects.create(encryptedPhoneNumber=phoneNumber, encryptedWeChat="", uuid=uuid, survey0=responseId)
-    #             whitelist.save()
-    #         else:
-    #             return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
-    # else:
     try:
         webUser = WebUser.objects.get(uuid=uuid)
         setattr(webUser, f"survey{day}", responseId)
