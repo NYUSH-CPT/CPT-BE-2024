@@ -158,7 +158,7 @@ def export_to_csv_func(csv_file, output_file):
     @admin.action(description="Export to CSV")
     def _export_to_csv(modeladmin, request, queryset):
 
-        if not (request.user.is_superuser or request.user.groups.filter(name='LS').exists()):
+        if not (request.user.is_superuser or request.user.groups.filter(name='LS').exists() or request.user.groups.filter(name='INFO').exists()):
             modeladmin.message_user(
                 request, "You do not have permission to perform this action.", level='error')
             return
@@ -219,7 +219,6 @@ class WebUserAdmin(admin.ModelAdmin):
         else:
             return []
 
-        return response
 
     def get_readonly_fields(self, request, obj=None):
         base_readonly_fields = [
