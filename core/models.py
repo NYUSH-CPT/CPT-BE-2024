@@ -151,7 +151,7 @@ class WebUser(models.Model):
                 if datetime.now() > currentTaskEndDate:
                     if self.currentDay < 1.1:
                         banReasons.append("未按时完成第一天任务")
-                        banReasons.append("task1_not_done")
+                        banTags.append("task1_not_done")
                     else:
                         banReasons.append("连续2天未完成新任务")
                         banTags.append("task_not_done")
