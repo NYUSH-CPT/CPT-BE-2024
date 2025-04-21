@@ -471,7 +471,7 @@ class MiniGame(Node):
                 banReasons, banTags = self.user.validity_check()
                 if self.user.group != "Waitlist" and "game_score_low" in banTags:
                     # 游戏总得分低于60%
-                    blued_msg.send(self.user.uuid, 13)
+                    blued_msg.send(self.user.uuid, 18)
                 break
 
             if not isinstance(node, WaitingForInput):

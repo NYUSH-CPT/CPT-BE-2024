@@ -139,7 +139,7 @@ class WebUser(models.Model):
             invalid4to8 = self.count_invalid_checks([4,5,6,8])
             if invalid1 >= 1:
                 banReasons.append("第1天的写作不合格")
-                banTags.append("quality_check_fail")
+                banTags.append("task1_quality_check_fail")
             if invalid4to8 >= 2:
                 banReasons.append("第4～8天的4篇写作中有2篇及以上不合格")
                 banTags.append("quality_check_fail")
@@ -149,8 +149,12 @@ class WebUser(models.Model):
                 currenrtTaskStartDate = startDate + timedelta(days=self.currentDay - 1)  # minimum date to start current task
                 currentTaskEndDate = currenrtTaskStartDate + timedelta(days=2) + timedelta(hours=4)  # maximum date to finish current task
                 if datetime.now() > currentTaskEndDate:
-                    banReasons.append("连续2天未完成新任务")
-                    banTags.append("task_not_done")
+                    if self.currentDay < 1.1:
+                        banReasons.append("未按时完成第一天任务")
+                        banReasons.append("task1_not_done")
+                    else:
+                        banReasons.append("连续2天未完成新任务")
+                        banTags.append("task_not_done")
             # Criteria 4: Game
             if self.gameFinished and self.score < 61200:
                 banReasons.append("游戏得分不足61200 (60%)")

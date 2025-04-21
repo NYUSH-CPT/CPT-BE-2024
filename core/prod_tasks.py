@@ -12,7 +12,7 @@ from datetime import datetime
 from core.services import blued_msg
 from core.utility import catch_exceptions
 
-with open("core/pilot_scheduled_tasks.json") as f:
+with open("core/scheduled_tasks.json") as f:
     tasks = json.load(f)
 
 @catch_exceptions
@@ -23,16 +23,6 @@ def launch_tasks(time: int):
         log=f"Event triggered at {datetime.now()}, with time {time}."
     )
     log.save()
-    
-    # pilot-only
-    for user in WebUser.objects.all():
-        if user.survey39IsValid != "False":
-            user.survey39IsValid = "False"
-            user.survey39 = "Unavailable for pilot"
-        if user.survey99IsValid != "False":
-            user.survey99 = "Unavailable for pilot"
-            user.survey99IsValid = "False"
-        user.save()
 
     sub_tasks = filter(lambda x: x["time"] == str(time), tasks)
     for sub_task in sub_tasks:
@@ -77,9 +67,8 @@ def launch_tasks(time: int):
                                 continue
                         elif user.currentDay >= currentDay+1:
                             continue
-                    # pilot-only
                     if 'survey_not_done' in sub_task['criteria']:
-                        if user.currentDay >= 39:
+                        if user.currentDay >= currentDay - 6:
                             continue
                     if 'has_unsent_quality_check_fail_msg' in sub_task['criteria']:
                         skip = True
