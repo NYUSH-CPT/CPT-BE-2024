@@ -24,15 +24,6 @@ def launch_tasks(time: int):
     )
     log.save()
     
-    # pilot-only
-    for user in WebUser.objects.all():
-        if user.survey39IsValid != "False":
-            user.survey39IsValid = "False"
-            user.survey39 = "Unavailable for pilot"
-        if user.survey99IsValid != "False":
-            user.survey99 = "Unavailable for pilot"
-            user.survey99IsValid = "False"
-        user.save()
 
     sub_tasks = filter(lambda x: x["time"] == str(time), tasks)
     for sub_task in sub_tasks:

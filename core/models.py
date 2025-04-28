@@ -119,6 +119,16 @@ class WebUser(models.Model):
         self.save()
         
     def validity_check(self):
+        # pilot-only
+        for user in WebUser.objects.all():
+            if user.survey39IsValid != "False":
+                user.survey39IsValid = "False"
+                user.survey39 = "Unavailable for pilot"
+            if user.survey99IsValid != "False":
+                user.survey99 = "Unavailable for pilot"
+                user.survey99IsValid = "False"
+            user.save()
+        
         banReasons = []
         banTags = []
         # Criteria 1: Qualtrics Survey
@@ -159,7 +169,12 @@ class WebUser(models.Model):
             if self.gameFinished and self.score < 61200:
                 banReasons.append("游戏得分不足61200 (60%)")
                 banTags.append("game_score_low")
-            
+                
+        #pilot-only
+        elif self.currentDay == 39 and not banReasons and self.banFlag:
+            banReasons.append("连续2天未完成新任务")
+            banTags.append("task_not_done")
+                 
         if len(banReasons) > 0:
             self.banReason = '；'.join(banReasons) + f'[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}]'
             if not self.banFlag:
