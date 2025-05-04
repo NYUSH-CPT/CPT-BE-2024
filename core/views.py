@@ -145,27 +145,65 @@ def handleSendSMSRequest(request):
 @catch_exceptions
 def login(request):
     phoneNumber = json.loads(request.body)['phoneNumber']
-    passcode = json.loads(request.body)['passcode']
+    password = json.loads(request.body)['passcode']
 
-    if len(phoneNumber) > 8 and phoneNumber.isnumeric() and len(passcode) == 4 and passcode.isnumeric():
+    if len(phoneNumber) > 8 and phoneNumber.isnumeric() and password:
         try:
             whitelist = Whitelist.objects.get(encryptedPhoneNumber=encrypt(phoneNumber))
+            if not whitelist.has_add_wechat:
+                return Response({"error": "请等待助教添加您的微信"}, status=status.HTTP_400_BAD_REQUEST)
+            if not whitelist.startDate:
+                return Response({"error": "实验尚未开始"}, status=status.HTTP_400_BAD_REQUEST)
             user = User.objects.get(username=whitelist.uuid)
-            if user.check_password(passcode):
+            if user.check_password(password):
                 refresh = RefreshToken.for_user(user)
                 return Response({
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
                 }, status=status.HTTP_200_OK)
             else:
-                return Response({"error": "验证码错误"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "手机号或密码错误"}, status=status.HTTP_400_BAD_REQUEST)
         except Whitelist.DoesNotExist:
             return Response({"error": "用户信息未加入白名单，请联系管理员"}, status=status.HTTP_404_NOT_FOUND)
         except User.DoesNotExist:
-            return Response({"error": "尚未获取验证码"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "尚未设置密码"}, status=status.HTTP_400_BAD_REQUEST)
     else:
-        return Response({"error": "手机号码或验证码不合规"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "手机号码或密码格式不正确"}, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(["POST"])
+@catch_exceptions
+def signup(request):
+    data = json.loads(request.body)
+    phoneNumber = data.get("phoneNumber")
+    password = data.get("passcode")
+
+    if len(phoneNumber) > 8 and phoneNumber.isnumeric() and password:
+        encryptedPhoneNumber = encrypt(phoneNumber)
+        try:
+            whitelist = Whitelist.objects.get(encryptedPhoneNumber=encryptedPhoneNumber)
+            if not whitelist.has_add_wechat:
+                return Response({"error": "请等待助教添加您的微信"}, status=status.HTTP_400_BAD_REQUEST)
+            if not whitelist.startDate:
+                return Response({"error": "实验尚未开始"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = User.objects.filter(username=whitelist.uuid).first()
+            if not user:
+                user = User.objects.create_user(username=whitelist.uuid)
+                user.set_password(password)
+                user.save()
+                webUser = WebUser.objects.create(user=user, whitelist=whitelist, 
+                                                encryptedPhoneNumber=encryptedPhoneNumber, encryptedWeChat=whitelist.encryptedWeChat,
+                                                group=whitelist.group, uuid=whitelist.uuid, startDate=whitelist.startDate,)
+                webUser.save()
+                return Response({"message": "密码设置成功"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "用户已存在，请联系管理员重设密码"}, status=status.HTTP_400_BAD_REQUEST)
+        except Whitelist.DoesNotExist:
+            return Response({"error": "用户信息未加入白名单，请联系管理员"}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response({"error": "手机号或密码格式不正确"}, status=status.HTTP_400_BAD_REQUEST)
+    
 
 @api_view(["POST"])
 @csrf_exempt

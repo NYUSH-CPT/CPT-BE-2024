@@ -12,7 +12,7 @@ admin_fieldsets = [
         'fields': ("phoneNumber", "WeChat")
     }),
     ("User Info and Access Status", {
-        'fields': ('user', 'whitelist', 'uuid', 'sms', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReason', 'banNotified', 'trainCompleteNotified', 'surveyCompleteNotified')
+        'fields': ('user', 'whitelist', 'uuid', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReason', 'banNotified', 'trainCompleteNotified', 'surveyCompleteNotified')
     }),
     ("Writing  1", {
         'fields': ( 'writing1', 'writing1QualityCheck', 'writing1QualityCheckRA', 'writing1QualityCheckCS', 'writing1QualityCheckNotified')
@@ -233,7 +233,7 @@ class WebUserAdmin(admin.ModelAdmin):
         elif request.user.groups.filter(name="INFO").exists():
             return base_readonly_fields + [
                 "phoneNumber", "WeChat",
-                'user', 'whitelist', 'sms', 'score', 'banFlag', 'banDay', 'user'
+                'user', 'whitelist', 'score', 'banFlag', 'banDay'
                 "gameBreakFlag", "gameFinished", "gameData",
                 "survey1", "survey1IsValid", 
                 "survey23", "survey23IsValid", 
@@ -242,7 +242,7 @@ class WebUserAdmin(admin.ModelAdmin):
             ]
         elif request.user.groups.filter(name="RA").exists():
             return base_readonly_fields + [
-                'user', 'whitelist', 'sms', 'score', 'banFlag', 'banDay', 'user'
+                'user', 'whitelist', 'score', 'banFlag', 'banDay',
                 "gameBreakFlag", "gameFinished", "gameData",
                 "survey1IsValid", "survey23IsValid", "survey39IsValid", "survey99IsValid"
             ]  

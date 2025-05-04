@@ -15,5 +15,6 @@ urlpatterns = [
     path('login', views.login, name='login'),
     path('qualtrics_submission', views.qualtrics_submission, name='qualtrics_submission'),
     path('key', views.key, name="key"),
-    path('collect_info', views.collect_info, name="collect_info")
+    path('collect_info', views.collect_info, name="collect_info"),
+    path('signup', views.signup, name="signup")
 ]
