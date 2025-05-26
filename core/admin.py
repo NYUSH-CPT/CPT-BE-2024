@@ -5,6 +5,12 @@ from core.utility import decrypt
 import csv
 from django.http import HttpResponse
 import os.path as path
+from django.contrib.auth.tokens import default_token_generator
+from dotenv import load_dotenv
+import os
+from django.utils.safestring import mark_safe
+
+load_dotenv()
 
 # Register your models here.
 admin_fieldsets = [
@@ -57,10 +63,10 @@ info_fieldsets = [
         'fields': ('writing5', 'writing5QualityCheck', 'writing5QualityCheckRA', 'writing5Viewed')
     }),
     ("Writing  6", {
-        'fields': ('writing6', 'writing6QualityCheck', 'writing6QualityCheckRA', 'feedback6Viewed')
+        'fields': ('writing6', 'writing6QualityCheck', 'writing6QualityCheckRA', 'feedback6Viewed', 'feedback6')
     }),
     ("Writing  8", {    
-        'fields': ('writing8', 'writing8QualityCheck', 'writing8QualityCheckRA', 'feedback8Viewed')
+        'fields': ('writing8', 'writing8QualityCheck', 'writing8QualityCheckRA', 'feedback8Viewed', 'feedback8')
     }),
     ("Game",{
         'fields': ( "gameBreakFlag", "gameFinished", "gameData")
@@ -87,10 +93,10 @@ ra_fieldsets = [
         'fields': ('writing5', 'writing5QualityCheck', 'writing5QualityCheckRA', 'writing5Viewed')
     }),
     ("Writing  6", {
-        'fields': ('writing6', 'writing6QualityCheck', 'writing6QualityCheckRA', 'feedback6Viewed')
+        'fields': ('writing6', 'writing6QualityCheck', 'writing6QualityCheckRA', 'feedback6Viewed', 'feedback6')
     }),
-    ("Writing  8", {    
-        'fields': ('writing8', 'writing8QualityCheck', 'writing8QualityCheckRA', 'feedback8Viewed')
+    ("Writing  8", {
+        'fields': ('writing8', 'writing8QualityCheck', 'writing8QualityCheckRA', 'feedback8Viewed', 'feedback8')
     }),
     ("Game",{
         'fields': ( "gameBreakFlag", "gameFinished", "gameData")
@@ -152,6 +158,15 @@ def set_startDate_4(modeladmin, request, queryset):
     days_later = timezone.now() + timezone.timedelta(days=4)
     queryset.update(startDate=days_later)
 
+@admin.action(description="Generate a link that reset WebUser password")
+def reset_password(modeladmin, request, queryset):
+    for webuser in queryset:
+        user = webuser.user
+        uuid = webuser.uuid
+        token = default_token_generator.make_token(user)
+        link = f"{os.getenv('WEB_URL')}/reset_password/?uuid={uuid}&token={token}"
+        html = f'<text>点击复制链接<text> <br /> <input type="text" value="{link}" readonly style="width:90%;" onclick="this.select(); document.execCommand(\'copy\'); alert(\'已复制到剪贴板\')" />'
+        modeladmin.message_user(request, mark_safe(html))
 
 def export_to_csv_func(csv_file, output_file):
     
@@ -195,7 +210,7 @@ def export_to_csv_func(csv_file, output_file):
 class WebUserAdmin(admin.ModelAdmin):
     export_to_csv = export_to_csv_func(
         "web_user_export_fields.csv", "web_user.csv")
-    actions = [reset_game, export_to_csv]
+    actions = [reset_game, export_to_csv, reset_password]
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
@@ -232,7 +247,7 @@ class WebUserAdmin(admin.ModelAdmin):
             return ["phoneNumber", "WeChat"]
         elif request.user.groups.filter(name="INFO").exists():
             return base_readonly_fields + [
-                "phoneNumber", "WeChat",
+                "phoneNumber", "WeChat", 'feedback6', 'feedback8',
                 'user', 'whitelist', 'score', 'banFlag', 'banDay'
                 "gameBreakFlag", "gameFinished", "gameData",
                 "survey1", "survey1IsValid", 
@@ -243,7 +258,7 @@ class WebUserAdmin(admin.ModelAdmin):
         elif request.user.groups.filter(name="RA").exists():
             return base_readonly_fields + [
                 'user', 'whitelist', 'score', 'banFlag', 'banDay',
-                "gameBreakFlag", "gameFinished", "gameData",
+                "gameBreakFlag", "gameFinished", "gameData", 'feedback6', 'feedback8',
                 "survey1IsValid", "survey23IsValid", "survey39IsValid", "survey99IsValid"
             ]  
         elif request.user.groups.filter(name="CS").exists():

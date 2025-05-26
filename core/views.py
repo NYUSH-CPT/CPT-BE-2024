@@ -12,6 +12,7 @@ import random
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.tokens import default_token_generator
 
 import logging
 logger = logging.getLogger('django')
@@ -203,7 +204,36 @@ def signup(request):
             return Response({"error": "用户信息未加入白名单，请联系管理员"}, status=status.HTTP_404_NOT_FOUND)
     else:
         return Response({"error": "手机号或密码格式不正确"}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["POST"])
+@csrf_exempt
+@catch_exceptions
+def reset_password(request):
+    try:
+        body = json.loads(request.body)
+        uuid = body.get("uuid")
+        token = body.get("token")
+        new_password = body.get('password')
+        if not uuid or not token or not new_password:
+            return Response({"error": "无效请求"}, status=status.HTTP_400_BAD_REQUEST)
+         
+        try:
+            webuser = WebUser.objects.get(uuid=uuid)
+        except:
+            return Response({"error": "无效请求"}, status=status.HTTP_400_BAD_REQUEST) 
+        
+        user = webuser.user
+        if not default_token_generator.check_token(user, token):
+            return Response({"error": "无效请求"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user.set_password(new_password)
+        user.save()
+        webuser.save()
+        return Response({"message": "密码重置成功"})
     
+    except json.JSONDecodeError:
+        return Response({"error": "无效请求"}, status=status.HTTP_400_BAD_REQUEST) 
+                
 
 @api_view(["POST"])
 @csrf_exempt
