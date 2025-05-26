@@ -160,6 +160,10 @@ def set_startDate_4(modeladmin, request, queryset):
 
 @admin.action(description="Generate a link that reset WebUser password")
 def reset_password(modeladmin, request, queryset):
+    if not (request.user.is_superuser or request.user.groups.filter(name='INFO').exists() or request.user.groups.filter(name='RA').exists()):
+        modeladmin.message_user(
+            request, "You do not have permission to perform this action.", level='error')
+        return
     for webuser in queryset:
         user = webuser.user
         uuid = webuser.uuid
