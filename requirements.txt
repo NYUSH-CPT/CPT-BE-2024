@@ -43,4 +43,5 @@ sqlparse==0.4.3
 tzdata==2022.7
 urllib3==1.26.14
 uvicorn
+whitenoise
 yarl==1.8.2
