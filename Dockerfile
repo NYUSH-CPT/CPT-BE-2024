@@ -26,4 +26,5 @@ adduser -S --shell /bin/bash --ingroup docker vscode
 EOF
 # install Docker tools (cli, buildx, compose)
 COPY --from=gloursdocker/docker / /
+RUN python3 manage.py collectstatic --noinput
 CMD ["uvicorn", "CPTBackend.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
