@@ -36,7 +36,11 @@ docker run  \
   -e "AES_KEY=$AES_KEY" \
   -e "WEB_URL=$WEB_URL" \
   -e "BLUED_API=$BLUED_API" \
+  -e "DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY" \
   -d --name cpt-be -p 8000:8000 ghcr.nju.edu.cn/nyush-cpt/cpt-be-2024@$IMAGE_SHA
+
+echo "Running collectstatic..."
+docker exec cpt-be python manage.py collectstatic --noinput
 
 # Start a new crontab container with the latest image
 docker run  \
@@ -53,6 +57,7 @@ docker run  \
   -e "AES_KEY=$AES_KEY" \
   -e "WEB_URL=$WEB_URL" \
   -e "BLUED_API=$BLUED_API" \
+  -e "DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY" \ 
   -d --name cpt-be-crontab ghcr.nju.edu.cn/nyush-cpt/cpt-be-2024@$IMAGE_SHA \
   /usr/sbin/crond -f
 
