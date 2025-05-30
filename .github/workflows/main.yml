@@ -74,6 +74,7 @@ jobs:
             sed -i "s|\$ENCRYPTION_SALT|${{ secrets.ENCRYPTION_SALT }}|g" deploy.sh
             sed -i "s|\$SECRET_KEY|${{ secrets.SECRET_KEY }}|g" deploy.sh
             sed -i "s|\$AES_KEY|${{ secrets.AES_KEY }}|g" deploy.sh
+            sed -i "s|\$DJANGO_SECRET_KEY|${{ secrets.DJANGO_SECRET_KEY }}|g" deploy.sh
             sed -i "s|\$IMAGE_SHA|$IMAGE_SHA|g" deploy.sh
             echo "Image SHA: $IMAGE_SHA"
       - name: Deploy to production

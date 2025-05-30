@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-3n%%0m@2=-0b8=z3ow+uz%hkzve^woq**466e8y^ta59u+l*7h'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-3n%%0m@2=-0b8=z3ow+uz%hkzve^woq**466e8y^ta59u+l*7h')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -36,7 +36,7 @@ ALLOWED_HOSTS = [".ngrok-free.app", "localhost", "127.0.0.1"]
 
 #
 
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
 
 
 INSTALLED_APPS = [
@@ -115,10 +115,10 @@ WSGI_APPLICATION = 'CPTBackend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
+        'NAME': os.getenv('DB_NAME', 'cpt'),
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', 3306),
     }
 }
