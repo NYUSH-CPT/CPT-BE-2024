@@ -244,4 +244,15 @@ class LSUser(models.Model):
         return f'{self.uuid}'
 
     
+class Screen(models.Model):
     
+    uuid = models.CharField(null=True, blank=True, max_length=200, help_text="Blued uuid")
+    valid = models.BooleanField(default=False, help_text="Whether the user is valid")
+    eligible = models.BooleanField(default=False, help_text="Whether the user is eligible for the experiment")
+    service = models.BooleanField(default=False, help_text="Whether the user needs mental health service")
+    responseId = models.CharField(max_length=30, null=True, blank=True)
+    consent = models.BooleanField(default=False, help_text="Whether the user has consented to the experiment")
+    submitted = models.BooleanField(default=False, help_text="Whether the user has submitted the information")
+    
+    def __str__(self):
+        return f'{self.uuid}'

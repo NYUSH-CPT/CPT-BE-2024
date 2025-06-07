@@ -17,5 +17,6 @@ urlpatterns = [
     path('key', views.key, name="key"),
     path('collect_info', views.collect_info, name="collect_info"),
     path('signup', views.signup, name="signup"),
-    path('reset_password', views.reset_password, name="reset_password")
+    path('reset_password', views.reset_password, name="reset_password"),
+    path('screen_record', views.screen_record, name="screen_record"),
 ]

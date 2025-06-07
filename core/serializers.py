@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import WebUser
+from .models import WebUser, Screen
 
 class WebUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,4 +23,9 @@ class WebUserSerializer(serializers.ModelSerializer):
             if kwargs['context'].get('writing'):
                 for field in set(self.fields) - set([kwargs['context']['field_name']]):
                     self.fields.pop(field)
-            
+
+
+class ScreenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Screen
+        fields = '__all__'

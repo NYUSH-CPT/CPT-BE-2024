@@ -2,8 +2,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .models import WebUser, Whitelist, LSUser
-from .serializers import WebUserSerializer
+from .models import WebUser, Whitelist, LSUser, Screen
+from .serializers import WebUserSerializer, ScreenSerializer
 from .utility import *
 import json
 from core.services.gameInit import *
@@ -283,7 +283,7 @@ def collect_info(request):
     keys = {"QQ", "WeChat", "phoneNumber", 'uuid', "responseId"}
     if any(k not in body for k in keys):
         return Response({"status": "Fail", "message": "无效问卷"}, status=status.HTTP_400_BAD_REQUEST) 
-    
+    print(body)
     QQ = body["QQ"]
     WeChat = body["WeChat"]
     phoneNumber = body["phoneNumber"]
@@ -295,7 +295,7 @@ def collect_info(request):
             and not Whitelist.objects.filter(encryptedPhoneNumber=encrypt(phoneNumber)).exists()\
             and not Whitelist.objects.filter(encryptedWeChat=encrypt(WeChat)).exists():
             whitelist = Whitelist.objects.create(uuid=uuid, encryptedPhoneNumber=encrypt(phoneNumber), encryptedWeChat=encrypt(WeChat), survey0=responseId)
-            whitelist.save()
+            screen = Screen.objects.filter(uuid=uuid).update(consent=True, submitted=True)
         else:
             return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
     else:
@@ -303,9 +303,41 @@ def collect_info(request):
             and not LSUser.objects.filter(encryptedPhoneNumber=encrypt(phoneNumber)).exists()\
             and not LSUser.objects.filter(encryptedQQ=encrypt(QQ)).exists():
             lsUser = LSUser.objects.create(uuid=uuid, encryptedPhoneNumber=encrypt(phoneNumber), encryptedQQ=encrypt(QQ), survey0=responseId)
-            lsUser.save()
+            screen = Screen.objects.filter(uuid=uuid).update(submitted=True)
         else:
             return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
             
     return Response({"status": "Success", "message": "成功提交"}, status=status.HTTP_200_OK)
+    
+    
+@api_view(["POST", "GET"])
+@catch_exceptions
+@csrf_exempt
+def screen_record(request):
+    if request.method == "POST":
+        body = json.loads(request.body)
+        keys = {"uuid", "responseId", "invalid", "eligible", "service"}
+        if any(k not in body for k in keys):
+            return Response({"status": "Fail", "message": "无效问卷"}, status=status.HTTP_400_BAD_REQUEST)
+        uuid = body.get("uuid")
+        if Screen.objects.filter(uuid=uuid).exists():
+            return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
+        Screen.objects.create(
+            uuid=uuid,
+            responseId=body["responseId"],
+            valid= not bool(int(body["invalid"])),
+            eligible=bool(int(body["eligible"])),
+            service=bool(int(body["service"]))
+        )
+        return Response({"status": "Success", "message": "成功提交"}, status=status.HTTP_201_CREATED)
+        
+    if request.method == "GET":
+        uuid = request.query_params.get("uuid")
+        try: 
+            screen = Screen.objects.get(uuid=uuid)
+            serialized = ScreenSerializer(screen)
+            return Response(serialized.data, status=status.HTTP_200_OK)
+        except Screen.DoesNotExist:
+            return Response({"error": "用户不存在"}, status=status.HTTP_404_NOT_FOUND)
+        
     

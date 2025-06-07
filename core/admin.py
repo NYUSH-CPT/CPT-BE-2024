@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import WebUser, Whitelist, Log, BannedLog, LSUser
+from .models import WebUser, Whitelist, Log, BannedLog, LSUser, Screen
 from django.utils import timezone
 from core.utility import decrypt
 import csv
@@ -362,10 +362,15 @@ class LSUserAdmin(admin.ModelAdmin):
                 ("Contact Info", {'fields': ('phoneNumber', 'qq')}),
                 ("User Info", {"fields": ("uuid", 'survey0')})]
         else:
-            return []    
+            return []
+        
+class ScreenAdmin(admin.ModelAdmin):
+    list_display = ('uuid', 'valid', 'eligible', 'consent', 'submitted', 'responseId')
+
 
 admin.site.register(WebUser, WebUserAdmin)
 admin.site.register(Whitelist, WhitelistAdmin)
 admin.site.register(LSUser, LSUserAdmin)
 admin.site.register(Log)
 admin.site.register(BannedLog)
+admin.site.register(Screen, ScreenAdmin)
