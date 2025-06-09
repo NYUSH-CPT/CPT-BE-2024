@@ -57,7 +57,7 @@ docker run  \
   -e "AES_KEY=$AES_KEY" \
   -e "WEB_URL=$WEB_URL" \
   -e "BLUED_API=$BLUED_API" \
-  -e "DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY" \ 
+  -e "DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY" \
   -d --name cpt-be-crontab ghcr.nju.edu.cn/nyush-cpt/cpt-be-2024@$IMAGE_SHA \
   /usr/sbin/crond -f
 
