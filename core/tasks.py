@@ -14,6 +14,20 @@ from core.utility import catch_exceptions
 
 with open("core/pilot_scheduled_tasks.json") as f:
     tasks = json.load(f)
+    
+defer_fields = (
+    "user",
+    "sms",
+    "encryptedPhoneNumber",
+    "encryptedWeChat",
+    "whitelist",
+    "writing1", "writing4", "writing5", "writing6", "writing8",
+    "writing4Viewed", "writing5Viewed",
+    "feedback6", "feedback6Viewed",
+    "feedback8", "feedback8Viewed",
+    "game", "gameBreakFlag", "gameData",
+    "survey1", "survey23", "survey39", "survey99"
+)
 
 @catch_exceptions
 def launch_tasks(time: int):
@@ -22,16 +36,16 @@ def launch_tasks(time: int):
         user=None,
         log=f"Event triggered at {datetime.now()}, with time {time}."
     )
-    log.save()
     
+    current_date = datetime.now().date()
 
     sub_tasks = filter(lambda x: x["time"] == str(time), tasks)
     for sub_task in sub_tasks:
         if 'day_0' in sub_task['criteria']:
-            for whitelist in Whitelist.objects.all():
+            for whitelist in Whitelist.objects.iterator():
                 if not whitelist.startDate or not whitelist.has_add_wechat or not whitelist.group:
                     continue
-                currentDay = (datetime.now().date() - whitelist.startDate).days + 1
+                currentDay = (current_date - whitelist.startDate).days + 1
                 print(whitelist.uuid, currentDay)
                 if currentDay != 0:
                     continue
@@ -49,7 +63,7 @@ def launch_tasks(time: int):
                     )
                     log.save()
         else:
-            for user in WebUser.objects.all():
+            for user in WebUser.objects.defer(*defer_fields).iterator():
                 banLog = False
                 # update user validity
                 banReasons, banTags = user.validity_check()
@@ -84,19 +98,16 @@ def launch_tasks(time: int):
                     if 'train_complete' in sub_task['criteria']:
                         if user.trainCompleteNotified or user.currentDay < 10:
                             continue
-                        user.trainCompleteNotified = True
-                        user.save()
+                        WebUser.objects.filter(uuid=user.uuid).update(trainCompleteNotified=True)
                     if 'survey_complete' in sub_task['criteria']:
                         if user.surveyCompleteNotified or not (all([getattr(user, f"survey{day}IsValid") != "Null" for day in [23, 39, 99]]) and any([getattr(user, f"survey{day}IsValid") == "True" for day in [23, 39, 99]])):
                             continue
-                        user.surveyCompleteNotified = True
-                        user.save()
+                        WebUser.objects.filter(uuid=user.uuid).update(surveyCompleteNotified=True)
                             
                 elif 'banned' in sub_task["criteria"] and banTags and not user.banNotified:
                     if not any([x in sub_task["criteria"] for x in banTags]):
                         continue
-                    user.banNotified = True
-                    user.save()
+                    WebUser.objects.filter(uuid=user.uuid).update(banNotified=True)
                     banLog = True
                 
                 else: 
@@ -105,7 +116,6 @@ def launch_tasks(time: int):
                 print(f"Sending message to {user.uuid} on task {sub_task['id']}...")
                 res = blued_msg.send(user.uuid, sub_task["id"])
                 if res['code'] == 200:
-                    # print(f"Message sent to {user.uuid} on task {sub_task['id']} successfully.")
                     log = Log.objects.create(
                         user=user,
                         log=f"Message sent to {user.uuid} on task {sub_task['id']} successfully."
