@@ -29,13 +29,13 @@ def launch_tasks(time: int):
     for sub_task in sub_tasks:
         if 'day_0' in sub_task['criteria']:
             for whitelist in Whitelist.objects.all():
+                if not whitelist.startDate or not whitelist.has_add_wechat or not whitelist.group:
+                    continue
                 currentDay = (datetime.now().date() - whitelist.startDate).days + 1
                 print(whitelist.uuid, currentDay)
                 if currentDay != 0:
                     continue
                 if whitelist.group not in sub_task['groups']:
-                    continue
-                if not whitelist.has_add_wechat:
                     continue
                 res = blued_msg.send(whitelist.uuid, sub_task["id"])
                 if res['code'] == 200:

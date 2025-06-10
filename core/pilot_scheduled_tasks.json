@@ -35,9 +35,9 @@
         "criteria": ["not_banned", "task_not_done"]
     },
     {
-        "id": 5,
+        "id": 30,
         "groups": ["Waitlist"],
-        "days": [1],
+        "days": [1, 2],
         "time": "20",
         "criteria": ["not_banned", "task_not_done"]
     },
