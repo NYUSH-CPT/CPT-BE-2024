@@ -71,15 +71,15 @@ class WebUser(models.Model):
     score = models.IntegerField(default=0)
     
     survey1 = models.CharField(max_length=30, null=True, blank=True)
-    survey1IsValid = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
+    survey1IsValid = models.CharField(max_length=10, choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
     survey23 = models.CharField(max_length=30, null=True, blank=True)
-    survey23IsValid = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
+    survey23IsValid = models.CharField(max_length=10, choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
     
     # pilot-only
     survey39 = models.CharField(max_length=30, null=True, blank=True, default="Unavailable for pilot")
-    survey39IsValid = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="True", help_text="Inherited from qualtrics survey")
+    survey39IsValid = models.CharField(max_length=10, choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="True", help_text="Inherited from qualtrics survey")
     survey99 = models.CharField(max_length=30, null=True, blank=True, default="Unavailable for pilot")
-    survey99IsValid = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="True", help_text="Inherited from qualtrics survey")
+    survey99IsValid = models.CharField(max_length=10, choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="True", help_text="Inherited from qualtrics survey")
     
     def __str__(self):
         return f'{self.uuid} | {self.group} | startDate: {self.startDate} | currentDay: {self.currentDay}'
