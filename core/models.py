@@ -74,10 +74,12 @@ class WebUser(models.Model):
     survey1IsValid = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
     survey23 = models.CharField(max_length=30, null=True, blank=True)
     survey23IsValid = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
-    survey39 = models.CharField(max_length=30, null=True, blank=True)
-    survey39IsValid = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
-    survey99 = models.CharField(max_length=30, null=True, blank=True)
-    survey99IsValid = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
+    
+    # pilot-only
+    survey39 = models.CharField(max_length=30, null=True, blank=True, default="Unavailable for pilot")
+    survey39IsValid = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="True", help_text="Inherited from qualtrics survey")
+    survey99 = models.CharField(max_length=30, null=True, blank=True, default="Unavailable for pilot")
+    survey99IsValid = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="True", help_text="Inherited from qualtrics survey")
     
     def __str__(self):
         return f'{self.uuid} | {self.group} | startDate: {self.startDate} | currentDay: {self.currentDay}'
@@ -97,7 +99,6 @@ class WebUser(models.Model):
             setattr(self, day_attr, "True")
         else:
             setattr(self, day_attr, "Null")
-        self.save()
 
     def count_invalid_checks(self, days: list[int]):
         invalid_count = 0
@@ -115,20 +116,8 @@ class WebUser(models.Model):
                 setattr(self, f'survey{day}IsValid', "False")
                 setattr(self, f'survey{day}', "Overdue")
                 self.currentDay = next_day
-
-        self.save()
         
     def validity_check(self):
-        # pilot-only
-        for user in WebUser.objects.all():
-            if user.survey39IsValid != "False":
-                user.survey39IsValid = "False"
-                user.survey39 = "Unavailable for pilot"
-            if user.survey99IsValid != "False":
-                user.survey99 = "Unavailable for pilot"
-                user.survey99IsValid = "False"
-            user.save()
-        
         banReasons = []
         banTags = []
         # Criteria 1: Qualtrics Survey
