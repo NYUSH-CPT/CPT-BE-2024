@@ -88,7 +88,7 @@ def launch_tasks(time: int):
                             continue
                         WebUser.objects.filter(uuid=user.uuid).update(trainCompleteNotified=True)
                     if 'survey_complete' in sub_task['criteria']:
-                        if user.surveyCompleteNotified or not (all([getattr(user, f"survey{day}IsValid") != "Null" for day in [23, 39, 99]]) and any([getattr(user, f"survey{day}IsValid") == "True" for day in [23, 39, 99]])):
+                        if user.surveyCompleteNotified or not all([getattr(user, f"survey{day}IsValid") in ["False", "True"] for day in [23, 39, 99]]):
                             continue
                         WebUser.objects.filter(uuid=user.uuid).update(surveyCompleteNotified=True)
                             
