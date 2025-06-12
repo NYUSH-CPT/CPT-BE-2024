@@ -19,9 +19,6 @@ defer_fields = (
     "game", "gameBreakFlag", "gameData",
 )
 
-from memory_profiler import profile
-
-@profile
 def launch_tasks(time: int):
     print(f"Event triggered at {datetime.now()}, with time {time}.")
     log = Log.objects.create(
