@@ -296,11 +296,7 @@ class WhitelistAdmin(admin.ModelAdmin):
        return decrypt(obj.encryptedPhoneNumber)
 
     def WeChat(self, obj):
-       return decrypt(obj.encryptedWeChat)
-    
-    def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        obj.assign_group()
+       return decrypt(obj.encryptedWeChat)        
 
     def get_list_display(self, request):
         if request.user.is_superuser:

@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import datetime, timedelta
@@ -190,21 +190,33 @@ class Whitelist(models.Model):
     
     def __str__(self):
         return self.uuid
+
+    @classmethod
+    @transaction.atomic
+    def assign_group(cls):
+        from .models import GroupState  
+
+        state, _ = GroupState.objects.select_for_update().get_or_create(id=1)
+
+        if state.block_index >= len(state.current_block):
+            block = ['Exp1'] * 2 + ['Exp2'] * 2 + ['Waitlist'] * 2
+            random.shuffle(block)
+            state.current_block = block
+            state.block_index = 0
+
+        group = state.current_block[state.block_index]
+        state.block_index += 1
+        state.updated_at = timezone.now()
+        state.save()
+        return group
     
-    def assign_group(self):
+    def save(self, *args, **kwargs):
         if self.has_add_wechat and not self.group:
-            rand = random.randint(1, 3)
-            if rand == 1:
-                self.group = "Exp1"
-            elif rand == 2:
-                self.group = "Exp2"
-            else:
-                self.group = "Waitlist"
-            self.save()
-                
-    
+            self.group = Whitelist.assign_group()
+        super().save(*args, **kwargs)
+
 class Log(models.Model):
-    
+
     time = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(WebUser, on_delete=models.CASCADE, null=True, blank=True)
     log = models.TextField()
@@ -245,3 +257,11 @@ class Screen(models.Model):
     
     def __str__(self):
         return f'{self.uuid}'
+    
+class GroupState(models.Model):
+    current_block = models.JSONField(default=list)
+    block_index = models.IntegerField(default=0)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"BlockIndex {self.block_index}/{len(self.current_block)}"
