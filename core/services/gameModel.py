@@ -447,7 +447,7 @@ class MiniGame(Node):
 
 
             if isinstance(self.current_node,
-                          TransitionQuestion) and self.current_node.display_id == 8 and self.user.gameBreakFlag == False:
+                          TransitionQuestion) and self.user.group!="Waitlist" and self.current_node.display_id == 8 and self.user.gameBreakFlag == False:
                 self.user.gameBreakFlag = True
                 self.response.addResponse(
                     SupervisorTextResponse('今天辛苦啦，您的游戏进度已经保存。您可以在明天继续游戏。'))
@@ -461,17 +461,19 @@ class MiniGame(Node):
                 break
             node = self.current_node.consume(self, request)
             request.body = b'{"choice":""}'
-            if isinstance(node, End):
+            if isinstance(node, End) :
                 self.response.addResponse(SupervisorTextResponse('游戏结束'))
                 self.user.gameFinished = True
                 pickle_game = pickle.dumps(self)
                 self.user.game = pickle_game
-                self.user.currentDay = 4
+                if self.user.group!="Waitlist": 
+                    self.user.currentDay = 4
+                    banReasons, banTags = self.user.validity_check()
+                    if "game_score_low" in banTags:
+                        # 游戏总得分低于60%
+                        blued_msg.send(self.user.uuid, 18)
                 self.user.save()
-                banReasons, banTags = self.user.validity_check()
-                if self.user.group != "Waitlist" and "game_score_low" in banTags:
-                    # 游戏总得分低于60%
-                    blued_msg.send(self.user.uuid, 18)
+                
                 break
 
             if not isinstance(node, WaitingForInput):

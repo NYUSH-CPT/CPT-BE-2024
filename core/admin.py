@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import WebUser, Whitelist, Log, BannedLog, LSUser, Screen
+from .models import WebUser, Whitelist, Log, BannedLog, LSUser, Screen, GroupState
 from django.utils import timezone
 from core.utility import decrypt
 import csv
@@ -370,3 +370,4 @@ admin.site.register(LSUser, LSUserAdmin)
 admin.site.register(Log)
 admin.site.register(BannedLog)
 admin.site.register(Screen, ScreenAdmin)
+# admin.site.register(GroupState)
