@@ -21,6 +21,7 @@ class WebUser(models.Model):
     surveyCompleteNotified = models.BooleanField(default=False, help_text="Auto set to true when user is notified")
     
     banFlag = models.BooleanField(default=False, help_text="This field is managed by automatic rules which cannot be changed by admin")
+    #TODO remove banreason
     banReason = models.TextField(max_length=200, null=True, blank=True, help_text="Reason for banning user, visible to user")
     banNotified = models.BooleanField(default=False, help_text="Auto set to true when user is notified")
     banDay = models.FloatField(default=-1, help_text="The task progress when the user is banned at")

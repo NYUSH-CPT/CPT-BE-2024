@@ -68,11 +68,8 @@ jobs:
             sed -i "s|\$DB_USER|${{ vars.DB_USER }}|g" deploy.sh
             sed -i "s|\$WEB_URL|${{ vars.WEB_URL }}|g" deploy.sh
             sed -i "s|\$BLUED_API|${{ vars.BLUED_API }}|g" deploy.sh
-            sed -i "s|\$ALIYUN_ACCESS_KEY_ID|${{ secrets.ALIYUN_ACCESS_KEY_ID }}|g" deploy.sh
-            sed -i "s|\$ALIYUN_ACCESS_SECRET|${{ secrets.ALIYUN_ACCESS_SECRET }}|g" deploy.sh
             sed -i "s|\$DB_PASSWORD|${{ secrets.DB_PASSWORD }}|g" deploy.sh
             sed -i "s|\$ENCRYPTION_SALT|${{ secrets.ENCRYPTION_SALT }}|g" deploy.sh
-            sed -i "s|\$SECRET_KEY|${{ secrets.SECRET_KEY }}|g" deploy.sh
             sed -i "s|\$AES_KEY|${{ secrets.AES_KEY }}|g" deploy.sh
             sed -i "s|\$DJANGO_SECRET_KEY|${{ secrets.DJANGO_SECRET_KEY }}|g" deploy.sh
             sed -i "s|\$IMAGE_SHA|$IMAGE_SHA|g" deploy.sh

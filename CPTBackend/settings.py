@@ -27,13 +27,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-3n%%0m@2=-0b8=z3ow+uz%hkzve^woq**466e8y^ta59u+l*7h')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = False
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = [".ngrok-free.app", "shnyu.danlanlove.com", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["shnyu.danlanlove.com", "localhost", "127.0.0.1"]
 
 # Application definition
-
 
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
 
