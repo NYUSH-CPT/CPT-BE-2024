@@ -468,7 +468,7 @@ class MiniGame(Node):
                 self.user.game = pickle_game
                 if self.user.group!="Waitlist": 
                     self.user.currentDay = 4
-                    banReasons, banTags = self.user.validity_check()
+                    banTags = self.user.validity_check()
                     if "game_score_low" in banTags:
                         # 游戏总得分低于60%
                         blued_msg.send(self.user.uuid, 18)

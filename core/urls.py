@@ -19,4 +19,5 @@ urlpatterns = [
     path('signup', views.signup, name="signup"),
     path('reset_password', views.reset_password, name="reset_password"),
     path('screen_record', views.screen_record, name="screen_record"),
+    path('assign_group', views.assign_group, name="assign_group"),
 ]

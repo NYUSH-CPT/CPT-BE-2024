@@ -2,7 +2,7 @@ from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import datetime, timedelta
-import random
+import json
 
 # Create your models here.
 
@@ -10,22 +10,35 @@ class WebUser(models.Model):
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, help_text="Auth user")
     uuid = models.CharField(null=True, blank=True, max_length=200, help_text="Blued uuid")
-    sms = models.CharField(null=True, blank=True, max_length=20)
     encryptedPhoneNumber = models.CharField(max_length=500, help_text="Encrypted phone number")
     encryptedWeChat = models.CharField(max_length=500, help_text="Encrypted WeChat number")
     whitelist = models.OneToOneField("Whitelist", on_delete=models.CASCADE, related_name="webUser")
     
-    group = models.TextField(choices=[("Exp1", "Exp1"), ("Exp2", "Exp2"), ("Waitlist", "Waitlist")], default="Null")
+    group = models.TextField(choices=[ ("Null", "Null"), ("Exp1", "Exp1"), ("Exp2", "Exp2"), ("Waitlist", "Waitlist")], blank=True, default="Null")
     currentDay = models.FloatField(default=1, help_text="User task progress - note that this number might be a float")
     startDate = models.DateField(default=timezone.now, help_text="Experiment start date")
     trainCompleteNotified = models.BooleanField(default=False, help_text="Auto set to true when user is notified")
     surveyCompleteNotified = models.BooleanField(default=False, help_text="Auto set to true when user is notified")
     
     banFlag = models.BooleanField(default=False, help_text="This field is managed by automatic rules which cannot be changed by admin")
+    #TODO remove banreason
     banReason = models.TextField(max_length=200, null=True, blank=True, help_text="Reason for banning user, visible to user")
     banNotified = models.BooleanField(default=False, help_text="Auto set to true when user is notified")
     banDay = models.FloatField(default=-1, help_text="The task progress when the user is banned at")
 
+    banReasonsJson = models.TextField(default="[]", blank=True)
+
+    @property
+    def banReasons(self):
+        try:
+            return json.loads(self.banReasonsJson)
+        except json.JSONDecodeError:
+            return []
+
+    @banReasons.setter
+    def banReasons(self, reason_list):
+        self.banReasonsJson = json.dumps(reason_list, ensure_ascii=False, indent=None)
+        
     writing1 = models.JSONField(default=dict, null=True, blank=True)
     writing1QualityCheck = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Auto generated quality check")
     writing1QualityCheckRA = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="RA quality check")
@@ -67,19 +80,17 @@ class WebUser(models.Model):
     game = models.BinaryField(null=True)
     gameBreakFlag = models.BooleanField(default=False)
     gameFinished = models.BooleanField(default=False)
-    gameData = models.JSONField(default=dict,null=True, blank=True)
+    gameData = models.JSONField(default=dict, null=True, blank=True)
     score = models.IntegerField(default=0)
     
     survey1 = models.CharField(max_length=30, null=True, blank=True)
     survey1IsValid = models.CharField(max_length=10, choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
     survey23 = models.CharField(max_length=30, null=True, blank=True)
     survey23IsValid = models.CharField(max_length=10, choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
-    
-    # pilot-only
-    survey39 = models.CharField(max_length=30, null=True, blank=True, default="Unavailable for pilot")
-    survey39IsValid = models.CharField(max_length=10, choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="False", help_text="Inherited from qualtrics survey")
-    survey99 = models.CharField(max_length=30, null=True, blank=True, default="Unavailable for pilot")
-    survey99IsValid = models.CharField(max_length=10, choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="False", help_text="Inherited from qualtrics survey")
+    survey39 = models.CharField(max_length=30, null=True, blank=True)
+    survey39IsValid = models.CharField(max_length=10, choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
+    survey99 = models.CharField(max_length=30, null=True, blank=True)
+    survey99IsValid = models.CharField(max_length=10, choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Inherited from qualtrics survey")
     
     def __str__(self):
         return f'{self.uuid} | {self.group} | startDate: {self.startDate} | currentDay: {self.currentDay}'
@@ -108,26 +119,43 @@ class WebUser(models.Model):
         return invalid_count
     
     def update_date_after_survey_due(self):
-        startDate = datetime.combine(self.startDate, datetime.min.time()).date() 
         now = datetime.now().date()
-        survey_days = {23: 39, 39: 99, 99: 100}
-        for day, next_day in survey_days.items():
-            if (now - startDate).days > day + 6 and self.currentDay == day:
+        survey_days = {0: (1, -1), 23: (39, 6), 39: (99, 6), 99: (100, 6)}
+        for day in survey_days:
+            next_day, window = survey_days[day]
+            if (now - self.startDate).days > day + window and self.currentDay <= day:
                 setattr(self, f'survey{day}IsValid', "False")
                 setattr(self, f'survey{day}', "Overdue")
                 self.currentDay = next_day
         
     def validity_check(self):
-        banReasons = []
-        banTags = []
+        if self.banDay == 1:
+            return
+        
+        BAN_TAGS_DICT = {
+            "pre_survey_invalid": "前测问卷无效",
+            "post_survey_invalid": "后测问卷无效",
+            "quality_check_fail": "第1天的写作不合格/第4～8天的4篇写作中有2篇及以上不合格",
+            "task_not_done": "连续2天未完成新任务",
+            "game_score_low": "游戏得分不足61200 (60%)",
+        }
+        existing_tags = {entry["tag"] for entry in self.banReasons}
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        new_reasons = []
+        def add_reason(tag):
+            if tag not in existing_tags:
+                new_reasons.append({
+                    "tag": tag,
+                    "label": BAN_TAGS_DICT.get(tag, tag),
+                    "time": now_str
+                })
+
         # Criteria 1: Qualtrics Survey
         self.update_date_after_survey_due()
         if self.survey1IsValid == "False":
-            banReasons.append("前测问卷无效")
-            banTags.append("pre_survey_invalid")
+            add_reason("pre_survey_invalid")
         if self.survey23IsValid == "False" and self.survey39IsValid == "False" and self.survey99IsValid == "False":
-            banReasons.append("后测问卷无效")
-            banTags.append("post_survey_invalid")
+            add_reason("post_survey_invalid")
         if self.group in ["Exp1", "Exp2"]:
             # Criteria 2: Writing Quality
             for day in [1, 4, 5, 6, 8]:
@@ -136,46 +164,30 @@ class WebUser(models.Model):
                 self.update_quality_check(f'writing{day}QualityCheck', getattr(self, ra_attr), getattr(self, cs_attr))
             invalid1 = self.count_invalid_checks([1])
             invalid4to8 = self.count_invalid_checks([4,5,6,8])
-            if invalid1 >= 1:
-                banReasons.append("第1天的写作不合格")
-                banTags.append("task1_quality_check_fail")
-            if invalid4to8 >= 2:
-                banReasons.append("第4～8天的4篇写作中有2篇及以上不合格")
-                banTags.append("quality_check_fail")
+            if invalid1 >= 1 or invalid4to8 >= 2:
+                add_reason("quality_check_fail")
             # Criteria 3: Overdue
             if self.currentDay <= 9:
                 startDate = datetime.combine(self.startDate, datetime.min.time())
                 currenrtTaskStartDate = startDate + timedelta(days=self.currentDay - 1)  # minimum date to start current task
                 currentTaskEndDate = currenrtTaskStartDate + timedelta(days=2) + timedelta(hours=4)  # maximum date to finish current task
                 if datetime.now() > currentTaskEndDate:
-                    if self.currentDay < 1.1:
-                        banReasons.append("未按时完成第一天任务")
-                        banTags.append("task1_not_done")
-                    else:
-                        banReasons.append("连续2天未完成新任务")
-                        banTags.append("task_not_done")
+                    add_reason("task_not_done")
             # Criteria 4: Game
             if self.gameFinished and self.score < 61200:
-                banReasons.append("游戏得分不足61200 (60%)")
-                banTags.append("game_score_low")
-                
-        #pilot-only
-        elif self.currentDay == 39 and not banReasons and self.banFlag:
-            banReasons.append("连续2天未完成新任务")
-            banTags.append("task_not_done")
-                 
-        if len(banReasons) > 0:
-            self.banReason = '；'.join(banReasons) + f'[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}]'
+                add_reason("game_score_low")
+        
+        if new_reasons:
+            self.banReasons = self.banReasons + new_reasons
             if not self.banFlag:
                 self.banFlag = True
                 self.banDay = self.currentDay
-        else:
-            self.banReason = ''
-            self.banFlag = False
-            self.banDay = -1
-
+                if self.currentDay <= 9:
+                    self.currentDay = 23
         self.save()
-        return banReasons, banTags
+        new_tags = {entry["tag"] for entry in new_reasons}
+        
+        return new_tags
 
 
 class Whitelist(models.Model):
@@ -185,36 +197,11 @@ class Whitelist(models.Model):
     uuid = models.CharField(max_length=200, help_text="Blued uuid")
     has_add_wechat = models.BooleanField(default=False, help_text="Please set it to true after adding user's wechat")
     survey0 = models.CharField(max_length=30, null=True, blank=True)
-    group = models.TextField(choices=[("Exp1", "Exp1"), ("Exp2", "Exp2"), ("Waitlist", "Waitlist")], default=None, null=True, blank=True)
     startDate = models.DateField(null=True, blank=True, help_text="Experiment start date")
     
     def __str__(self):
         return self.uuid
-
-    @classmethod
-    @transaction.atomic
-    def assign_group(cls):
-        from .models import GroupState  
-
-        state, _ = GroupState.objects.select_for_update().get_or_create(id=1)
-
-        if state.block_index >= len(state.current_block):
-            block = ['Exp1'] * 2 + ['Exp2'] * 2 + ['Waitlist'] * 2
-            random.shuffle(block)
-            state.current_block = block
-            state.block_index = 0
-
-        group = state.current_block[state.block_index]
-        state.block_index += 1
-        state.updated_at = timezone.now()
-        state.save()
-        return group
     
-    def save(self, *args, **kwargs):
-        if self.has_add_wechat and not self.group:
-            self.group = Whitelist.assign_group()
-        super().save(*args, **kwargs)
-
 class Log(models.Model):
 
     time = models.DateTimeField(auto_now_add=True)
@@ -258,10 +245,3 @@ class Screen(models.Model):
     def __str__(self):
         return f'{self.uuid}'
     
-class GroupState(models.Model):
-    current_block = models.JSONField(default=list)
-    block_index = models.IntegerField(default=0)
-    updated_at = models.DateTimeField(default=timezone.now)
-
-    def __str__(self):
-        return f"BlockIndex {self.block_index}/{len(self.current_block)}"

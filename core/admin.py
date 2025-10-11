@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import WebUser, Whitelist, Log, BannedLog, LSUser, Screen, GroupState
+from .models import WebUser, Whitelist, Log, BannedLog, LSUser, Screen
 from django.utils import timezone
 from core.utility import decrypt
 import csv
@@ -18,7 +18,7 @@ admin_fieldsets = [
         'fields': ("phoneNumber", "WeChat")
     }),
     ("User Info and Access Status", {
-        'fields': ('user', 'whitelist', 'uuid', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReason', 'banNotified', 'trainCompleteNotified', 'surveyCompleteNotified')
+        'fields': ('user', 'whitelist', 'uuid', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReason', 'banReasonsJson', 'banNotified', 'trainCompleteNotified', 'surveyCompleteNotified')
     }),
     ("Writing  1", {
         'fields': ( 'writing1', 'writing1QualityCheck', 'writing1QualityCheckRA', 'writing1QualityCheckCS', 'writing1QualityCheckNotified')
@@ -51,7 +51,7 @@ info_fieldsets = [
         'fields': ("phoneNumber", "WeChat")
     }),
     ("User Info and Access Status", {
-        'fields': ('uuid', 'whitelist', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReason')
+        'fields': ('uuid', 'whitelist', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReason', 'banReasonsJson')
     }),
     ("Writing  1", {
         'fields': ( 'writing1', 'writing1QualityCheck', 'writing1QualityCheckRA')
@@ -81,7 +81,7 @@ info_fieldsets = [
 
 ra_fieldsets = [
     ("User Info and Access Status", {
-        'fields': ('uuid', 'whitelist', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReason')
+        'fields': ('uuid', 'whitelist', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReason', 'banReasonsJson')
     }),
     ("Writing  1", {
         'fields': ( 'writing1', 'writing1QualityCheck', 'writing1QualityCheckRA')
@@ -146,7 +146,6 @@ def reset_game(modeladmin, request, queryset):
 def set_startDate_2(modeladmin, request, queryset):
     days_later = timezone.now() + timezone.timedelta(days=2)
     queryset.update(startDate=days_later)
-
                
 @admin.action(description="Set Whitelist Start Date to three days later")
 def set_startDate_3(modeladmin, request, queryset):
@@ -252,7 +251,7 @@ class WebUserAdmin(admin.ModelAdmin):
         elif request.user.groups.filter(name="INFO").exists():
             return base_readonly_fields + [
                 "phoneNumber", "WeChat", 'feedback6', 'feedback8',
-                'user', 'whitelist', 'score', 'banFlag', 'banDay'
+                'user', 'whitelist', 'score', 'banFlag', 'banDay',
                 "gameBreakFlag", "gameFinished", "gameData",
                 "survey1", "survey1IsValid", 
                 "survey23", "survey23IsValid", 
@@ -300,11 +299,11 @@ class WhitelistAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         if request.user.is_superuser:
-            return ('uuid', 'group', 'phoneNumber', 'WeChat', 'has_add_wechat', 'startDate', 'survey0')
+            return ('uuid', 'phoneNumber', 'WeChat', 'has_add_wechat', 'startDate', 'survey0')
         elif request.user.groups.filter(name="INFO").exists():
-            return ('uuid', 'group', 'phoneNumber', 'WeChat', 'has_add_wechat', 'startDate', 'survey0')
+            return ('uuid', 'phoneNumber', 'WeChat', 'has_add_wechat', 'startDate', 'survey0')
         elif request.user.groups.filter(name="RA").exists():
-            return ('uuid', 'group', 'has_add_wechat', 'startDate')
+            return ('uuid', 'has_add_wechat', 'startDate')
         else:
             return ()
         
@@ -312,9 +311,9 @@ class WhitelistAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return ['phoneNumber', 'WeChat']
         elif request.user.groups.filter(name="INFO").exists():
-            return ['phoneNumber', 'WeChat', 'uuid', 'group', 'survey0']
+            return ['phoneNumber', 'WeChat', 'uuid', 'survey0']
         elif request.user.groups.filter(name="RA").exists():
-            return ['uuid', 'group']
+            return ['uuid']
         else:
             return []
         
@@ -322,13 +321,13 @@ class WhitelistAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return [
                 ("Contact Info", {'fields': ('phoneNumber', 'WeChat')}),
-                ("User Info", {"fields": ("uuid", "group", "has_add_wechat", "startDate", 'survey0')})]
+                ("User Info", {"fields": ("uuid",  "has_add_wechat", "startDate", 'survey0')})]
         elif request.user.groups.filter(name="INFO").exists():
             return [
                 ("Contact Info", {'fields': ('phoneNumber', 'WeChat')}),
-                ("User Info", {"fields": ("uuid", "group", "has_add_wechat", "startDate", 'survey0')})]
+                ("User Info", {"fields": ("uuid", "has_add_wechat", "startDate", 'survey0')})]
         elif request.user.groups.filter(name="RA").exists():
-            return [("User Info", {"fields": ("uuid", "group", "has_add_wechat", "startDate")})]
+            return [("User Info", {"fields": ("uuid", "has_add_wechat", "startDate")})]
         else:
             return []
     

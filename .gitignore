@@ -9,3 +9,4 @@ access_key_secret.txt
 .DS_Store
 /staticfiles/
 /static/
+/testing/

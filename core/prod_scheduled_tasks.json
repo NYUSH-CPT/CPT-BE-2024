@@ -3,27 +3,27 @@
         "id": 1,
         "groups": ["Waitlist"],
         "days": [0],
-        "time": "8",
-        "criteria": ["not_banned", "day_0"]
+        "time": "20",
+        "criteria": ["day_0"]
     },
     {
         "id": 2,
         "groups": ["Exp1", "Exp2"],
         "days": [0],
-        "time": "8",
-        "criteria": ["not_banned", "day_0"]
+        "time": "20",
+        "criteria": ["day_0"]
     },
     {
         "id": 3,
         "groups": ["Exp1", "Exp2", "Waitlist"],
-        "days": [1, 23, 39, 99],
+        "days": [23, 39, 99],
         "time": "8",
-        "criteria": ["not_banned"]
+        "criteria": ["survey_not_done"]
     },
     {
         "id": 4,
         "groups": ["Exp1", "Exp2"],
-        "days": [2, 3, 4, 5, 6, 7, 8, 9],
+        "days": [1, 2, 3, 4, 5, 6, 7, 8, 9],
         "time": "8",
         "criteria": ["not_banned"]
     },
@@ -31,13 +31,6 @@
         "id": 5,
         "groups": ["Exp1", "Exp2"],
         "days": [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        "time": "20",
-        "criteria": ["not_banned", "task_not_done"]
-    },
-    {
-        "id": 5,
-        "groups": ["Waitlist"],
-        "days": [1],
         "time": "20",
         "criteria": ["not_banned", "task_not_done"]
     },
@@ -60,84 +53,70 @@
         "groups": ["Exp1", "Exp2", "Waitlist"],
         "days": [22],
         "time": "20",
-        "criteria": ["not_banned"]
+        "criteria": ["all"]
     },
     {
         "id": 10,
         "groups": ["Exp1", "Exp2", "Waitlist"],
         "days": [38],
         "time": "20",
-        "criteria": ["not_banned"]
+        "criteria": ["all"]
     },
     {
         "id": 11,
         "groups": ["Exp1", "Exp2", "Waitlist"],
         "days": [98],
         "time": "20",
-        "criteria": ["not_banned"]
+        "criteria": ["all"]
     },
     {
         "id": 13,
         "groups": ["Exp1", "Exp2", "Waitlist"],
         "days": [23, 39, 99],
         "time": "20",  
-        "criteria": ["not_banned", "survey_not_done"]
+        "criteria": ["survey_not_done"]
     },
     {
         "id": 13,
         "groups": ["Exp1", "Exp2", "Waitlist"],
         "days": [24, 40, 100, 25, 41, 101, 27, 43, 103],
         "time": "8", 
-        "criteria": ["not_banned", "survey_not_done"]
-    },
-    {
-        "id": 14,
-        "groups": ["Exp1", "Exp2"],
-        "days": [3],
-        "time": "8",
-        "criteria": ["banned", "has_unsent_banned_msg", "task1_not_done"]
+        "criteria": ["survey_not_done"]
     },
     {
         "id": 16,
         "groups": ["Exp1", "Exp2"],
-        "days": [3, 4, 5, 6, 7, 8, 9],
+        "days": [2, 3, 4, 5, 6, 7, 8, 9],
         "time": "8",
-        "criteria": ["banned", "has_unsent_banned_msg", "task_not_done"]
+        "criteria": ["banned", "task_not_done"]
     },
     {
         "id": 18,
         "groups": ["Exp1", "Exp2"],
         "days": [3],
         "time": "after the game ends",
-        "criteria": ["banned", "has_unsent_banned_msg", "game_score_low"]
-    },
-    {
-        "id": 20,
-        "groups": ["Exp1", "Exp2"],
-        "days": [1, 2, 3],
-        "time": "20",
-        "criteria": ["banned", "has_unsent_banned_msg", "task1_quality_check_fail"]
+        "criteria": ["banned", "game_score_low"]
     },
     {
         "id": 21,
         "groups": ["Exp1", "Exp2"],
-        "days": [4, 5, 6, 7, 8, 9],
+        "days": [1, 4, 5, 6, 7, 8, 9],
         "time": "20",
-        "criteria": ["banned", "has_unsent_banned_msg", "quality_check_fail"]
+        "criteria": ["banned", "quality_check_fail"]
     },
     {
         "id": 22,
-        "groups": ["Exp1", "Exp2", "Waitlist"],
+        "groups": ["Exp1", "Exp2", "Waitlist", "Null"],
         "days": [1, 2, 3],
         "time": "8",
-        "criteria": ["banned", "has_unsent_banned_msg", "pre_survey_invalid"]
+        "criteria": ["banned", "pre_survey_invalid"]
     },
     {
         "id": 24,
         "groups": ["Exp1", "Exp2", "Waitlist"],
         "days": [99, 100, 101, 102, 103, 104, 105, 106, 107],
         "time": "8",
-        "criteria": ["banned", "has_unsent_banned_msg", "post_survey_invalid"]
+        "criteria": ["banned", "post_survey_invalid"]
     },
     {
         "id": 26,
@@ -147,17 +126,10 @@
         "criteria": ["not_banned", "train_complete"]
     },
     {
-        "id": 28,
-        "groups": ["Exp1", "Exp2", "Waitlist"],
-        "days": [106],
-        "time": "8",
-        "criteria": ["not_banned", "survey_complete"]
-    },
-    {
         "id": 29,
         "groups": ["Exp1", "Exp2", "Waitlist"],
         "days": [], 
         "time": "20", 
-        "criteria": ["not_banned", "survey_complete"]
+        "criteria": ["survey_complete"]
     }
 ]
