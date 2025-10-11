@@ -67,14 +67,14 @@
         "groups": ["Exp1", "Exp2", "Waitlist"],
         "days": [23],
         "time": "20",  
-        "criteria": ["not_banned", "survey_not_done"]
+        "criteria": ["not_banned", "banned", "survey_not_done"]
     },
     {
         "id": 12,
         "groups": ["Exp1", "Exp2", "Waitlist"],
         "days": [24, 25, 27],
         "time": "8", 
-        "criteria": ["not_banned", "survey_not_done"]
+        "criteria": ["not_banned", "banned", "survey_not_done"]
     },
     {
         "id": 14,
@@ -137,13 +137,13 @@
         "groups": ["Exp1", "Exp2", "Waitlist"],
         "days": [30],
         "time": "8",
-        "criteria": ["not_banned", "survey_complete"]
+        "criteria": ["survey_complete"]
     },
     {
         "id": 29,
         "groups": ["Exp1", "Exp2", "Waitlist"],
         "days": [], 
         "time": "20", 
-        "criteria": ["not_banned", "survey_complete"]
+        "criteria": ["survey_complete"]
     }
 ]

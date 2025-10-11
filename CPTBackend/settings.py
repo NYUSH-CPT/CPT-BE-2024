@@ -15,7 +15,6 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-print("Test env: ", os.getenv('DB_NAME'))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,13 +27,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-3n%%0m@2=-0b8=z3ow+uz%hkzve^woq**466e8y^ta59u+l*7h')
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG = False
 DEBUG = True
 
-ALLOWED_HOSTS = [".ngrok-free.app", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = [".ngrok-free.app", "shnyu.danlanlove.com", "localhost", "127.0.0.1"]
 
 # Application definition
 
-#
 
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
 
@@ -148,11 +147,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
-
 USE_I18N = True
 
 USE_TZ = True
+
+TIME_ZONE = 'Asia/Hong_Kong'
 
 
 # Static files (CSS, JavaScript, Images)
@@ -202,14 +201,3 @@ LOGGING = {
         },
     },
 }
-
-# Crontab
-
-CRONJOBS = [
-    # ('0 8 * * *', 'core.tasks.launch_tasks', [8], {}, '>> /app/log.txt'),
-    # ('0 20 * * *', 'core.tasks.launch_tasks', [20], {}, '>> /app/log.txt'),
-    # ('* * * * *', 'core.tasks.test_tasks', [21], {}, '>> /app/log.txt')
-]
-
-USE_TZ = True
-TIME_ZONE = 'Asia/Hong_Kong'
