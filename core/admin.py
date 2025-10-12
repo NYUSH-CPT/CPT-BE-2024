@@ -18,7 +18,7 @@ admin_fieldsets = [
         'fields': ("phoneNumber", "WeChat")
     }),
     ("User Info and Access Status", {
-        'fields': ('user', 'whitelist', 'uuid', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReason', 'banReasonsJson', 'banNotified', 'trainCompleteNotified', 'surveyCompleteNotified')
+        'fields': ('user', 'whitelist', 'uuid', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReasonsJson', 'banNotified', 'trainCompleteNotified', 'surveyCompleteNotified')
     }),
     ("Writing  1", {
         'fields': ( 'writing1', 'writing1QualityCheck', 'writing1QualityCheckRA', 'writing1QualityCheckCS', 'writing1QualityCheckNotified')
@@ -51,7 +51,7 @@ info_fieldsets = [
         'fields': ("phoneNumber", "WeChat")
     }),
     ("User Info and Access Status", {
-        'fields': ('uuid', 'whitelist', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReason', 'banReasonsJson')
+        'fields': ('uuid', 'whitelist', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReasonsJson')
     }),
     ("Writing  1", {
         'fields': ( 'writing1', 'writing1QualityCheck', 'writing1QualityCheckRA')
@@ -81,7 +81,7 @@ info_fieldsets = [
 
 ra_fieldsets = [
     ("User Info and Access Status", {
-        'fields': ('uuid', 'whitelist', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReason', 'banReasonsJson')
+        'fields': ('uuid', 'whitelist', 'score', 'group', 'currentDay', 'startDate', 'banFlag', 'banDay', 'banReasonsJson')
     }),
     ("Writing  1", {
         'fields': ( 'writing1', 'writing1QualityCheck', 'writing1QualityCheckRA')
@@ -244,15 +244,15 @@ class WebUserAdmin(admin.ModelAdmin):
             'writing1', 'writing4', 'writing5', 'writing6', 'writing8',
             'writing1QualityCheck', 'writing4QualityCheck', 'writing5QualityCheck', 'writing6QualityCheck', 'writing8QualityCheck', 
             'writing4Viewed', 'writing5Viewed', 'feedback6Viewed', 'feedback8Viewed', 
-            "gameBreakFlag", "gameFinished", 'banFlag', 'banDay', 'banReason'
+            "gameBreakFlag", "gameFinished", 'banFlag', 'banDay', 'banReasonsJson'
         ]
         if request.user.is_superuser:
             return ["phoneNumber", "WeChat"]
         elif request.user.groups.filter(name="INFO").exists():
             return base_readonly_fields + [
-                "phoneNumber", "WeChat", 'feedback6', 'feedback8',
-                'user', 'whitelist', 'score', 'banFlag', 'banDay',
-                "gameBreakFlag", "gameFinished", "gameData",
+                "phoneNumber", "WeChat",
+                'user', 'whitelist', 'score',
+                "gameData",
                 "survey1", "survey1IsValid", 
                 "survey23", "survey23IsValid", 
                 "survey39", "survey39IsValid", 
@@ -261,7 +261,7 @@ class WebUserAdmin(admin.ModelAdmin):
         elif request.user.groups.filter(name="RA").exists():
             return base_readonly_fields + [
                 'user', 'whitelist', 'score', 'banFlag', 'banDay',
-                "gameBreakFlag", "gameFinished", "gameData", 'feedback6', 'feedback8',
+                "gameData",
                 "survey1IsValid", "survey23IsValid", "survey39IsValid", "survey99IsValid"
             ]  
         elif request.user.groups.filter(name="CS").exists():
@@ -369,4 +369,3 @@ admin.site.register(LSUser, LSUserAdmin)
 admin.site.register(Log)
 admin.site.register(BannedLog)
 admin.site.register(Screen, ScreenAdmin)
-# admin.site.register(GroupState)

@@ -20,7 +20,7 @@ defer_fields = (
 )
 
 def launch_tasks(time: int):
-    print(f"Event triggered at {datetime.now()}, with time {time}.")
+    # print(f"Event triggered at {datetime.now()}, with time {time}.")
     log = Log.objects.create(
         user=None,
         log=f"Event triggered at {datetime.now()}, with time {time}."
@@ -104,7 +104,7 @@ def launch_tasks(time: int):
                 else: 
                     continue
                 
-                print(f"Sending message to {user.uuid} on task {sub_task['id']}...")
+                # print(f"Sending message to {user.uuid} on task {sub_task['id']}...")
                 res = blued_msg.send(user.uuid, sub_task["id"])
                 if res['code'] == 200:
                     logs_to_create.append(Log(
@@ -127,7 +127,7 @@ def launch_tasks(time: int):
     BannedLog.objects.bulk_create(banlogs_to_create)
                     
 def test_tasks(time: int):
-    print(f"Event triggered at {datetime.now()}, with time {time}.")
+    # print(f"Event triggered at {datetime.now()}, with time {time}.")
     res = blued_msg.send("wKLBbRvD", 1)
     user = WebUser.objects.filter(uuid="wKLBbRvD").first()
     if res['code'] == 200:

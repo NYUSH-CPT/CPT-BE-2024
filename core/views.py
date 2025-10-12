@@ -311,7 +311,6 @@ def screen_record(request):
         except json.JSONDecodeError:
             return Response({"status": "Fail", "message": "无效问卷"}, status=status.HTTP_400_BAD_REQUEST)
 
-        print(body)
         keys = {"uuid", "responseId", "invalid", "eligible", "service"}
         if any(k not in body for k in keys):
             return Response({"status": "Fail", "message": "无效问卷"}, status=status.HTTP_400_BAD_REQUEST)
