@@ -23,6 +23,7 @@ sleep 3
 
 # Start a new container with the latest image
 docker run  \
+  -v /home/ubuntu/staticfiles:/app/staticfiles \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
   -e "DB_NAME=$DB_NAME" \
