@@ -3,7 +3,6 @@ from functools import wraps
 from rest_framework import status
 from dotenv import load_dotenv
 import os
-import django
 import sys
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
@@ -17,11 +16,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'CPTBackend.settings'
 
 load_dotenv()
 
-logging.basicConfig(
-    filename='error.log',
-    level=logging.ERROR,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-)
+logger = logging.getLogger("django") 
 
 def catch_exceptions(view_func):
     @wraps(view_func)

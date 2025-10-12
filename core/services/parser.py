@@ -85,7 +85,6 @@ def get_scenario_list():
                 choices.append(sheet_obj.cell(row=r, column=6).value)
                 false_dict[sheet_obj.cell(row=r, column=6).value] = sheet_obj.cell(row=r, column=9).value
 
-            # print(choices)
             for r in range(thoughts_index[j], thoughts_index[j + 1]):
                 问题类型 = sheet_obj.cell(row=r, column=5).value
                 correct_choice = sheet_obj.cell(row=r, column=6).value
@@ -114,8 +113,6 @@ def get_scenario_list():
                             scenario_content, thoughts[:], next_node=End())
         scenario_list.append(scenario)
     scenario_list.sort(key=lambda x: x.display_id)
-
-    # print('random_display_id',random_display_id)
 
 
 

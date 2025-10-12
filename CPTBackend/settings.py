@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -78,9 +77,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 CSRF_TRUSTED_ORIGINS = ["https://shnyu.danlanlove.com"]
 
@@ -155,15 +151,13 @@ TIME_ZONE = 'Asia/Hong_Kong'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'api/static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-import os
 
 LOGGING = {
     'version': 1,
@@ -181,19 +175,17 @@ LOGGING = {
     'handlers': {
         'file': {
             'level': 'ERROR',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'errors.log'),
+            'when': 'midnight',     # 每天切分一次
+            'interval': 1,
+            'backupCount': 7,       # 只保留 7 天日志
             'formatter': 'verbose',
-        },
-        'console': {
-            'level': 'ERROR',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['file', 'console'],
+            'handlers': ['file'],
             'level': 'ERROR',
             'propagate': True,
         },

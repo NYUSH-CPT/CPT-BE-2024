@@ -33,14 +33,12 @@ def getNewGame(user: str) -> MiniGame|Response:
     try:
         webUser = WebUser.objects.get(user=user)
     except WebUser.DoesNotExist:
-        print("User does not exist")
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
     if webUser.currentDay < 2:
         return Response({"error": f"Current progress has not reach day 2"}, status=status.HTTP_400_BAD_REQUEST)
     # check if game is initialized in web user
     if webUser.game is None:
-        # print("Game not initialized")
         game = initializeGame(webUser)
         # use pickle serialization for game
         pickle_game = pickle.dumps(game)
@@ -49,7 +47,6 @@ def getNewGame(user: str) -> MiniGame|Response:
         webUser.validity_check()
         return game
     else:
-        # print("Game already initialized")
         game = pickle.loads(webUser.game)
         game.user = webUser
         return game

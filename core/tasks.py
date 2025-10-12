@@ -133,7 +133,7 @@ def launch_tasks(time: int):
     BannedLog.objects.bulk_create(banlogs_to_create)
                     
 def test_tasks(time: int):
-    print(f"Event triggered at {datetime.now()}, with time {time}.")
+    # print(f"Event triggered at {datetime.now()}, with time {time}.")
     res = blued_msg.send("wKLBbRvD", 1)
     user = WebUser.objects.filter(uuid="wKLBbRvD").first()
     if res['code'] == 200:
