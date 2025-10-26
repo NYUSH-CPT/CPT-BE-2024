@@ -21,8 +21,6 @@ class WebUser(models.Model):
     surveyCompleteNotified = models.BooleanField(default=False, help_text="Auto set to true when user is notified")
     
     banFlag = models.BooleanField(default=False, help_text="This field is managed by automatic rules which cannot be changed by admin")
-    #TODO remove banreason
-    # banReason = models.TextField(max_length=200, null=True, blank=True, help_text="Reason for banning user, visible to user")
     banNotified = models.BooleanField(default=False, help_text="Auto set to true when user is notified")
     banDay = models.FloatField(default=-1, help_text="The task progress when the user is banned at")
 
@@ -120,7 +118,7 @@ class WebUser(models.Model):
     
     def update_date_after_survey_due(self):
         now = datetime.now().date()
-        survey_days = {0: (1, -1), 23: (39, 6), 39: (99, 6), 99: (100, 6)}
+        survey_days = {1: (1, -1), 23: (39, 6), 39: (99, 6), 99: (100, 6)}
         for day in survey_days:
             next_day, window = survey_days[day]
             if (now - self.startDate).days > day + window and self.currentDay <= day:

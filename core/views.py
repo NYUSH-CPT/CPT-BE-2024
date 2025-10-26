@@ -153,6 +153,8 @@ def login(request):
             whitelist = Whitelist.objects.get(encryptedPhoneNumber=encrypt(phoneNumber))
             if not whitelist.has_add_wechat:
                 return Response({"error": "请等待助教添加您的微信"}, status=status.HTTP_400_BAD_REQUEST)
+            if not whitelist.startDate:
+                return Response({"error": "实验尚未开始"}, status=status.HTTP_400_BAD_REQUEST)
             user = User.objects.get(username=whitelist.uuid)
             if user.check_password(password):
                 refresh = RefreshToken.for_user(user)
@@ -183,6 +185,8 @@ def signup(request):
             whitelist = Whitelist.objects.get(encryptedPhoneNumber=encryptedPhoneNumber)
             if not whitelist.has_add_wechat:
                 return Response({"error": "请等待助教添加您的微信"}, status=status.HTTP_400_BAD_REQUEST)
+            if not whitelist.startDate:
+                return Response({"error": "实验尚未开始"}, status=status.HTTP_400_BAD_REQUEST)
             user = User.objects.filter(username=whitelist.uuid).first()
             if not user:
                 user = User.objects.create_user(username=whitelist.uuid)

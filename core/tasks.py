@@ -48,15 +48,16 @@ def launch_tasks(time: int):
                 # print(whitelist.uuid, currentDay)
                 if currentDay != 0:
                     continue
-                res = blued_msg.send(whitelist.uuid, sub_task["id"])
-                if res['code'] == 200:
-                    logs_to_create.append(Log(
-                        log=f"Message sent to {whitelist.uuid} on task {sub_task['id']} successfully."
-                    ))
-                else: 
-                    logs_to_create.append(Log(
-                        log=f"Message sent failed. Error message: " + res['msg']
-                    ))
+                print(whitelist.uuid, sub_task["id"])
+                # res = blued_msg.send(whitelist.uuid, sub_task["id"])
+                # if res['code'] == 200:
+                #     logs_to_create.append(Log(
+                #         log=f"Message sent to {whitelist.uuid} on task {sub_task['id']} successfully."
+                #     ))
+                # else: 
+                #     logs_to_create.append(Log(
+                #         log=f"Message sent failed. Error message: " + res['msg']
+                #     ))
 
         else:
             for user in WebUser.objects.all():
@@ -69,7 +70,8 @@ def launch_tasks(time: int):
                 if user.group not in sub_task['groups']:
                     continue
                 currentDay = (current_date - user.startDate).days + 1
-                # print(user.uuid, currentDay)
+                print(user.uuid, currentDay)
+                
                 if currentDay not in sub_task['days']:
                     continue
                 # check criteria
@@ -112,25 +114,27 @@ def launch_tasks(time: int):
                 else: 
                     continue
                 
-                res = blued_msg.send(user.uuid, sub_task["id"])
-                if res['code'] == 200:
-                    logs_to_create.append(Log(
-                        user=user,
-                        log=f"Message sent to {user.uuid} on task {sub_task['id']} successfully."
-                    ))
-                else: 
-                    logs_to_create.append(Log(
-                        user=user,
-                        log="Message sent failed. Error message: " + res['msg']
-                    ))
+                print(user.uuid, sub_task["id"])
+                
+                # res = blued_msg.send(user.uuid, sub_task["id"])
+                # if res['code'] == 200:
+                #     logs_to_create.append(Log(
+                #         user=user,
+                #         log=f"Message sent to {user.uuid} on task {sub_task['id']} successfully."
+                #     ))
+                # else: 
+                #     logs_to_create.append(Log(
+                #         user=user,
+                #         log="Message sent failed. Error message: " + res['msg']
+                #     ))
                     
-                if banLog:
-                    banlogs_to_create.append(BannedLog(
-                            user=user,
-                            log=f"{banTags}"
-                        ))
-    Log.objects.bulk_create(logs_to_create)
-    BannedLog.objects.bulk_create(banlogs_to_create)
+                # if banLog:
+                #     banlogs_to_create.append(BannedLog(
+                #             user=user,
+                #             log=f"{banTags}"
+                #         ))
+    # Log.objects.bulk_create(logs_to_create)
+    # BannedLog.objects.bulk_create(banlogs_to_create)
                     
 def test_tasks(time: int):
     # print(f"Event triggered at {datetime.now()}, with time {time}.")
