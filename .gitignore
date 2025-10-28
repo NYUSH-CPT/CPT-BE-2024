@@ -10,3 +10,4 @@ access_key_secret.txt
 /staticfiles/
 /static/
 /testing/
+*.log.*

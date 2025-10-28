@@ -267,7 +267,7 @@ def qualtrics_submission(request):
 @catch_exceptions
 def key(request):
     key = request.query_params.get("key")
-    if not Whitelist.objects.filter(uuid=key) and not LSUser.objects.filter(uuid=key):
+    if not Screen.objects.filter(uuid=key):
         return Response(status=status.HTTP_404_NOT_FOUND)
     return Response(status=status.HTTP_200_OK)
 
