@@ -4,14 +4,14 @@
         "groups": ["Waitlist"],
         "days": [0],
         "time": "20",
-        "criteria": ["day_0"]
+        "criteria": ["not_banned"]
     },
     {
         "id": 2,
         "groups": ["Exp1", "Exp2"],
         "days": [0],
         "time": "20",
-        "criteria": ["day_0"]
+        "criteria": ["not_banned"]
     },
     {
         "id": 3,
