@@ -128,7 +128,7 @@ class WebUser(models.Model):
         
     def validity_check(self):
         if self.banDay == 1:
-            return
+            return set()
         
         BAN_TAGS_DICT = {
             "pre_survey_invalid": "前测问卷无效",
@@ -183,9 +183,9 @@ class WebUser(models.Model):
                 if self.currentDay <= 9:
                     self.currentDay = 23
         self.save()
-        new_tags = {entry["tag"] for entry in new_reasons}
+        all_tags = {entry["tag"] for entry in self.banReasons}
         
-        return new_tags
+        return all_tags
 
 
 class Whitelist(models.Model):
