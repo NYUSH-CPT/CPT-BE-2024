@@ -128,7 +128,7 @@ class WebUser(models.Model):
         
     def validity_check(self):
         if self.banDay == 1:
-            return set()
+            return {entry["tag"] for entry in self.banReasons}
         
         BAN_TAGS_DICT = {
             "pre_survey_invalid": "前测问卷无效",
