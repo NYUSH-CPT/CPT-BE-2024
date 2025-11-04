@@ -13,6 +13,8 @@ from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.tokens import default_token_generator
+import jwt
+import os
 
 import logging
 logger = logging.getLogger('django')
@@ -266,9 +268,51 @@ def qualtrics_submission(request):
 @api_view(["GET"])
 @catch_exceptions
 def key(request):
-    key = request.query_params.get("key")
-    if not Screen.objects.filter(uuid=key):
+    """
+    处理来自 Blued 的重定向请求，进行 JWT 验签
+    兼容旧流程：如果没有 token，直接验证 key；如果有 token，先验证 token
+    """
+    key_param = request.query_params.get("key")
+    token = request.query_params.get("token")
+    
+    if token:
+        secret = os.getenv('QR_JWT_SECRET')
+        if not secret:
+            logger.error('QR_JWT_SECRET not configured')
+        else:
+            try:
+                payload = jwt.decode(
+                    token,
+                    secret,
+                    algorithms=['HS256'],
+                    options={'verify_exp': True},
+                    leeway=5  # 5秒容差
+                )
+            except jwt.ExpiredSignatureError:
+                logger.warning('QR token expired')
+                return Response(
+                    {"error": "二维码已失效，请刷新重试"},
+                    status=419 
+                )
+            except jwt.InvalidTokenError as e:
+                logger.warning(f'Invalid QR token: {e}')
+                return Response(
+                    {"error": "二维码已失效，请刷新重试"},
+                    status=419
+                )
+            except Exception as e:
+                logger.error(f'Error validating QR token: {e}')
+                return Response(
+                    {"error": "二维码已失效，请刷新重试"},
+                    status=419
+                )
+    
+    if not key_param:
         return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    if not Screen.objects.filter(uuid=key_param).exists():
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
     return Response(status=status.HTTP_200_OK)
 
 
