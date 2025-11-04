@@ -34,6 +34,7 @@ docker run  \
   -e "WEB_URL=$WEB_URL" \
   -e "BLUED_API=$BLUED_API" \
   -e "DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY" \
+  -e "QR_JWT_SECRET=$QR_JWT_SECRET" \
   -d --name cpt-be -p 8000:8000 ghcr.nju.edu.cn/nyush-cpt/cpt-be-2024@$IMAGE_SHA
 
 echo "Running collectstatic..."
