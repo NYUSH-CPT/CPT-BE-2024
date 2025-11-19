@@ -118,7 +118,7 @@ class WebUser(models.Model):
     
     def update_date_after_survey_due(self):
         now = datetime.now().date()
-        survey_days = {1: (1, -1), 23: (39, 6), 39: (99, 6), 99: (100, 6)}
+        survey_days = {1: (1, -2), 23: (39, 6), 39: (99, 6), 99: (100, 6)}
         for day in survey_days:
             next_day, window = survey_days[day]
             if (now - self.startDate).days > day + window and self.currentDay <= day:
