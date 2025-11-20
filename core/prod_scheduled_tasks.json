@@ -107,7 +107,7 @@
     {
         "id": 22,
         "groups": ["Exp1", "Exp2", "Waitlist", "Null"],
-        "days": [1, 2, 3],
+        "days": [1, 2, 3, 4, 5],
         "time": "8",
         "criteria": ["banned", "pre_survey_invalid"]
     },

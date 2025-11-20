@@ -41,8 +41,6 @@ def launch_tasks(time: int):
     sub_tasks = filter(lambda x: x["time"] == str(time), tasks)
     for sub_task in sub_tasks:
         for user in WebUser.objects.all():
-            if user.banDay == 1:
-                continue
             banLog = False
             # update user validity
             banTags = user.validity_check()
@@ -50,7 +48,7 @@ def launch_tasks(time: int):
             if user.group not in sub_task['groups']:
                 continue
             currentDay = (current_date - user.startDate).days + 1
-            if currentDay not in sub_task['days']:
+            if currentDay not in sub_task['days'] and sub_task["id"] != 22:
                 continue
             
             # check criteria
