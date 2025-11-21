@@ -48,7 +48,7 @@ def launch_tasks(time: int):
             if user.group not in sub_task['groups']:
                 continue
             currentDay = (current_date - user.startDate).days + 1
-            if currentDay not in sub_task['days'] and sub_task["id"] != 22:
+            if currentDay not in sub_task['days']:
                 continue
             
             # check criteria
