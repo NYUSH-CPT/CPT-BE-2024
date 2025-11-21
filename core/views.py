@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .models import WebUser, Whitelist, LSUser, Screen
+from .models import WebUser, Whitelist, LSUser, Screen, Log, BannedLog
 from .serializers import WebUserSerializer, ScreenSerializer
 from .utility import *
 import json
@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.tokens import default_token_generator
 import jwt
 import os
+from core.services import blued_msg
 
 import logging
 logger = logging.getLogger('django')
@@ -417,7 +418,23 @@ def assign_group(request):
         webUser.survey1IsValid = isvalid
         if isvalid == "False":  
             currentDay = 1
-            webUser.banDay = 1
+            res = blued_msg.send(user.uuid, 22)
+            if res['code'] == 200:
+                Log.create(
+                    user=user,
+                    log=f"Message sent to {user.uuid} on task {sub_task['id']} successfully."
+                )
+                WebUser.objects.filter(uuid=user.uuid).update(banNotified=True)
+                BannedLog.create(
+                    user=user,
+                    log=f"{banTags}"
+                )
+            else: 
+                Log.create(
+                    user=user,
+                    log="Message sent failed. Error message: " + res['msg']
+                )
+                
         elif group == "Waitlist": currentDay = 23
         else: currentDay = 1.1
         webUser.currentDay = currentDay
