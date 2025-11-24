@@ -65,6 +65,7 @@ class WebUser(models.Model):
      
     feedback6 = models.TextField(null=True, blank=True, help_text="Please write feedback in Markdown format")
     feedback6Viewed = models.BooleanField(default=False, help_text="Auto set to true when user views feedback")
+    feedback6RAApproved = models.BooleanField(default=False, help_text="RA approval required before showing feedback to user")
     
     writing8 = models.JSONField(default=dict, null=True, blank=True)
     writing8QualityCheck = models.TextField(choices=[("True", "True"), ("False", "False"), ("Null", "Null")], default="Null", help_text="Auto generated quality check")
@@ -74,6 +75,7 @@ class WebUser(models.Model):
     
     feedback8 = models.TextField(null=True, blank=True, help_text="Please write feedback in Markdown format")
     feedback8Viewed = models.BooleanField(default=False, help_text="Auto set to true when user views feedback")
+    feedback8RAApproved = models.BooleanField(default=False, help_text="RA approval required before showing feedback to user")
     
     game = models.BinaryField(null=True)
     gameBreakFlag = models.BooleanField(default=False)

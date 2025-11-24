@@ -13,6 +13,7 @@ class WebUserSerializer(serializers.ModelSerializer):
             if kwargs['context'].get('info'):
                 info_fields = [
                     'uuid', 'group', 'currentDay', 'startDate', 'banFlag', 'banReason', 'banDay', 'feedback6', 'feedback8',
+                    'feedback6RAApproved', 'feedback8RAApproved',
                     'writing4Viewed', 'writing5Viewed', 'feedback6Viewed', 'feedback8Viewed', 
                     'survey1', 'survey23', 'survey39', 'survey99',
                     'survey1IsValid', 'survey23IsValid', 'survey39IsValid', 'survey99IsValid',

@@ -30,10 +30,10 @@ admin_fieldsets = [
         'fields': ('writing5', 'writing5QualityCheck', 'writing5QualityCheckRA', 'writing5QualityCheckCS', 'writing5Viewed', 'writing5QualityCheckNotified')
     }),
     ("Writing  6", {
-        'fields': ('writing6', 'writing6QualityCheck', 'writing6QualityCheckRA', 'writing6QualityCheckCS', 'writing6QualityCheckNotified', 'feedback6', 'feedback6Viewed')
+        'fields': ('writing6', 'writing6QualityCheck', 'writing6QualityCheckRA', 'writing6QualityCheckCS', 'writing6QualityCheckNotified', 'feedback6', 'feedback6RAApproved', 'feedback6Viewed')
     }),
     ("Writing  8", {    
-        'fields': ('writing8', 'writing8QualityCheck', 'writing8QualityCheckRA', 'writing8QualityCheckCS', 'writing8QualityCheckNotified', 'feedback8', 'feedback8Viewed')
+        'fields': ('writing8', 'writing8QualityCheck', 'writing8QualityCheckRA', 'writing8QualityCheckCS', 'writing8QualityCheckNotified', 'feedback8', 'feedback8RAApproved', 'feedback8Viewed')
     }),
     ("Game",{
         'fields': ( "gameBreakFlag", "gameFinished", "gameData")
@@ -63,10 +63,10 @@ info_fieldsets = [
         'fields': ('writing5', 'writing5QualityCheck', 'writing5QualityCheckRA', 'writing5Viewed')
     }),
     ("Writing  6", {
-        'fields': ('writing6', 'writing6QualityCheck', 'writing6QualityCheckRA', 'feedback6Viewed', 'feedback6')
+        'fields': ('writing6', 'writing6QualityCheck', 'writing6QualityCheckRA', 'feedback6Viewed', 'feedback6', 'feedback6RAApproved')
     }),
     ("Writing  8", {    
-        'fields': ('writing8', 'writing8QualityCheck', 'writing8QualityCheckRA', 'feedback8Viewed', 'feedback8')
+        'fields': ('writing8', 'writing8QualityCheck', 'writing8QualityCheckRA', 'feedback8Viewed', 'feedback8', 'feedback8RAApproved')
     }),
     ("Game",{
         'fields': ( "gameBreakFlag", "gameFinished", "gameData")
@@ -93,10 +93,10 @@ ra_fieldsets = [
         'fields': ('writing5', 'writing5QualityCheck', 'writing5QualityCheckRA', 'writing5Viewed')
     }),
     ("Writing  6", {
-        'fields': ('writing6', 'writing6QualityCheck', 'writing6QualityCheckRA', 'feedback6Viewed', 'feedback6')
+        'fields': ('writing6', 'writing6QualityCheck', 'writing6QualityCheckRA', 'feedback6Viewed', 'feedback6', 'feedback6RAApproved')
     }),
     ("Writing  8", {
-        'fields': ('writing8', 'writing8QualityCheck', 'writing8QualityCheckRA', 'feedback8Viewed', 'feedback8')
+        'fields': ('writing8', 'writing8QualityCheck', 'writing8QualityCheckRA', 'feedback8Viewed', 'feedback8', 'feedback8RAApproved')
     }),
     ("Game",{
         'fields': ( "gameBreakFlag", "gameFinished", "gameData")
@@ -123,10 +123,10 @@ cs_fieldsets = [
         'fields': ('writing5', 'writing5QualityCheck', 'writing5QualityCheckCS')
     }),
     ("Writing  6", {
-        'fields': ('writing6', 'writing6QualityCheck', 'writing6QualityCheckCS', 'feedback6')
+        'fields': ('writing6', 'writing6QualityCheck', 'writing6QualityCheckCS', 'feedback6', 'feedback6RAApproved')
     }),
     ("Writing  8", {    
-        'fields': ('writing8', 'writing8QualityCheck', 'writing8QualityCheckCS', 'feedback8')
+        'fields': ('writing8', 'writing8QualityCheck', 'writing8QualityCheckCS', 'feedback8', 'feedback8RAApproved')
     })
 ]
 
@@ -266,7 +266,7 @@ class WebUserAdmin(admin.ModelAdmin):
             ]  
         elif request.user.groups.filter(name="CS").exists():
             return base_readonly_fields + [
-                'startDate', 'currentDay'
+                'startDate', 'currentDay', 'feedback6RAApproved', 'feedback8RAApproved'
             ]
         else:
             return []
