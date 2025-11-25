@@ -418,20 +418,20 @@ def assign_group(request):
         webUser.survey1IsValid = isvalid
         if isvalid == "False":  
             currentDay = 1
-            res = blued_msg.send(user.uuid, 22)
+            res = blued_msg.send(webUser.uuid, 22)
             if res['code'] == 200:
                 Log.create(
-                    user=user,
-                    log=f"Message sent to {user.uuid} on task {sub_task['id']} successfully."
+                    user=webUser,
+                    log=f"Message sent to {webUser.uuid} on task 22 successfully."
                 )
-                WebUser.objects.filter(uuid=user.uuid).update(banNotified=True)
+                WebUser.objects.filter(uuid=webUser.uuid).update(banNotified=True)
                 BannedLog.create(
-                    user=user,
-                    log=f"{banTags}"
+                    user=webUser,
+                    log=f"[pre_survey_invalid]"
                 )
             else: 
                 Log.create(
-                    user=user,
+                    user=WebUser,
                     log="Message sent failed. Error message: " + res['msg']
                 )
                 

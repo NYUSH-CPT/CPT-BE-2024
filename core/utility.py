@@ -20,9 +20,9 @@ logger = logging.getLogger("django")
 
 def catch_exceptions(view_func):
     @wraps(view_func)
-    def wrapper(request, *args, **kwargs):
+    def wrapper(*args, **kwargs):
         try:
-            return view_func(request, *args, **kwargs)
+            return view_func(*args, **kwargs)
         except Exception as e:
             tb = traceback.extract_tb(e.__traceback__)
             filename, line, func, text = tb[-1]

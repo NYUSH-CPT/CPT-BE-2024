@@ -40,7 +40,12 @@ def launch_tasks(time: int):
 
     sub_tasks = filter(lambda x: x["time"] == str(time), tasks)
     for sub_task in sub_tasks:
-        for user in WebUser.objects.all():
+        # Use iterator() to avoid loading all users into memory at once
+        # Process users in batches to prevent memory issues
+        batch_size = 100
+        user_queryset = WebUser.objects.all().iterator(chunk_size=batch_size)
+        
+        for user in user_queryset:
             banLog = False
             # update user validity
             banTags = user.validity_check()
@@ -106,8 +111,20 @@ def launch_tasks(time: int):
                         user=user,
                         log=f"{banTags}"
                     ))
-    Log.objects.bulk_create(logs_to_create)
-    BannedLog.objects.bulk_create(banlogs_to_create)
+            
+            # Batch create logs periodically to avoid memory issues
+            if len(logs_to_create) >= 500:
+                Log.objects.bulk_create(logs_to_create)
+                logs_to_create = []
+            if len(banlogs_to_create) >= 500:
+                BannedLog.objects.bulk_create(banlogs_to_create)
+                banlogs_to_create = []
+    
+    # Create remaining logs
+    if logs_to_create:
+        Log.objects.bulk_create(logs_to_create)
+    if banlogs_to_create:
+        BannedLog.objects.bulk_create(banlogs_to_create)
                     
 # def test_tasks(time: int):
 #     # print(f"Event triggered at {datetime.now()}, with time {time}.")
