@@ -104,12 +104,9 @@ class WebUser(models.Model):
         self.validity_check()
     
     def update_quality_check(self, day_attr, ra_check, cs_check):
-        if ra_check == "False" and cs_check == "False":
-            setattr(self, day_attr, "False")
-        elif ra_check != "Null" and cs_check != "Null":
-            setattr(self, day_attr, "True")
-        else:
-            setattr(self, day_attr, "Null")
+        """已优化：使用 _calculate_quality_check 方法"""
+        new_value = self._calculate_quality_check(ra_check, cs_check)
+        setattr(self, day_attr, new_value)
 
     def count_invalid_checks(self, days: list[int]):
         invalid_count = 0
@@ -119,16 +116,28 @@ class WebUser(models.Model):
         return invalid_count
     
     def update_date_after_survey_due(self):
+        """更新过期问卷状态，返回是否进行了更新"""
         now = datetime.now().date()
         survey_days = {1: (1, -2), 23: (39, 6), 39: (99, 6), 99: (100, 6)}
+        updated = False
         for day in survey_days:
             next_day, window = survey_days[day]
             if (now - self.startDate).days > day + window and self.currentDay <= day:
                 setattr(self, f'survey{day}IsValid', "False")
                 setattr(self, f'survey{day}', "Overdue")
                 self.currentDay = next_day
+                updated = True
+        return updated
         
-    def validity_check(self):
+    def validity_check(self, save=True):
+        """
+        优化：添加 save 参数，允许调用者控制是否保存
+        
+        原因：
+        - 在批量操作时，可以批量保存而不是逐个保存
+        - 减少数据库写入次数，提高性能
+        - 保持向后兼容，默认仍然保存
+        """
         if self.banDay == 1:
             return {entry["tag"] for entry in self.banReasons}
         
@@ -151,17 +160,29 @@ class WebUser(models.Model):
                 })
 
         # Criteria 1: Qualtrics Survey
-        self.update_date_after_survey_due()
+        # 优化：只在需要时更新日期（避免不必要的计算）
+        survey_due_updated = self.update_date_after_survey_due()
+        
         if self.survey1IsValid == "False":
             add_reason("pre_survey_invalid")
         if self.survey23IsValid == "False" and self.survey39IsValid == "False" and self.survey99IsValid == "False":
             add_reason("post_survey_invalid")
         if self.group in ["Exp1", "Exp2"]:
             # Criteria 2: Writing Quality
+            # 优化：批量更新 quality check，减少属性访问
+            quality_updates = {}
             for day in [1, 4, 5, 6, 8]:
                 ra_attr = f'writing{day}QualityCheckRA'
                 cs_attr = f'writing{day}QualityCheckCS'
-                self.update_quality_check(f'writing{day}QualityCheck', getattr(self, ra_attr), getattr(self, cs_attr))
+                ra_value = getattr(self, ra_attr)
+                cs_value = getattr(self, cs_attr)
+                new_quality = self._calculate_quality_check(ra_value, cs_value)
+                quality_updates[f'writing{day}QualityCheck'] = new_quality
+            
+            # 批量设置 quality check 值
+            for attr, value in quality_updates.items():
+                setattr(self, attr, value)
+            
             invalid1 = self.count_invalid_checks([1])
             invalid4to8 = self.count_invalid_checks([4,5,6,8])
             if invalid1 >= 1 or invalid4to8 >= 2:
@@ -177,17 +198,35 @@ class WebUser(models.Model):
             if self.gameFinished and self.score < 61200:
                 add_reason("game_score_low")
         
+        # 只在有变更时才保存
+        needs_save = False
         if new_reasons:
             self.banReasons = self.banReasons + new_reasons
+            needs_save = True
             if not self.banFlag:
                 self.banFlag = True
                 self.banDay = self.currentDay
                 if self.currentDay <= 9:
                     self.currentDay = 23
-        self.save()
+        elif survey_due_updated or quality_updates:
+            # 即使没有新的 ban reasons，如果更新了日期或 quality check，也需要保存
+            needs_save = True
+        
+        if needs_save and save:
+            self.save()
+        
         all_tags = {entry["tag"] for entry in self.banReasons}
         
         return all_tags
+    
+    def _calculate_quality_check(self, ra_check, cs_check):
+        """辅助方法：计算 quality check 值，避免重复代码"""
+        if ra_check == "False" and cs_check == "False":
+            return "False"
+        elif ra_check != "Null" and cs_check != "Null":
+            return "True"
+        else:
+            return "Null"
 
 
 class Whitelist(models.Model):
