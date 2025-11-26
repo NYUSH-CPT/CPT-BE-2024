@@ -9,6 +9,7 @@ from django.contrib.auth.tokens import default_token_generator
 from dotenv import load_dotenv
 import os
 from django.utils.safestring import mark_safe
+from django.core.cache import cache
 
 load_dotenv()
 
@@ -215,15 +216,60 @@ class WebUserAdmin(admin.ModelAdmin):
         "web_user_export_fields.csv", "web_user.csv")
     actions = [reset_game, export_to_csv, reset_password]
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('user', 'whitelist')
+
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
-        obj.validity_check()
+        
+        if not change:
+            obj.validity_check()
+        else:
+            validity_related_fields = [
+                'writing1QualityCheckRA', 'writing1QualityCheckCS',
+                'writing4QualityCheckRA', 'writing4QualityCheckCS',
+                'writing5QualityCheckRA', 'writing5QualityCheckCS',
+                'writing6QualityCheckRA', 'writing6QualityCheckCS',
+                'writing8QualityCheckRA', 'writing8QualityCheckCS',
+                'survey1IsValid', 'survey23IsValid', 'survey39IsValid', 'survey99IsValid',
+                'gameFinished', 'score', 'currentDay', 'startDate'
+            ]
+            
+            if any(field in form.changed_data for field in validity_related_fields):
+                obj.validity_check()
 
-    def phoneNumber(self, obj):
-       return decrypt(obj.encryptedPhoneNumber)
+    def _get_decrypted_phone(self, encrypted_value):
+        cache_key = f'decrypted_phone_{encrypted_value[:20]}'
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+        
+        try:
+            decrypted = decrypt(encrypted_value)
+            cache.set(cache_key, decrypted, 300)
+            return decrypted
+        except Exception:
+            return "解密失败"
+
+    def _get_decrypted_wechat(self, encrypted_value):
+        cache_key = f'decrypted_wechat_{encrypted_value[:20]}'
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+        
+        try:
+            decrypted = decrypt(encrypted_value)
+            cache.set(cache_key, decrypted, 300)
+            return decrypted
+        except Exception:
+            return "解密失败"
+
+    def phoneNumber(self, obj):     
+        return self._get_decrypted_phone(obj.encryptedPhoneNumber)
 
     def WeChat(self, obj):
-       return decrypt(obj.encryptedWeChat)
+        return self._get_decrypted_wechat(obj.encryptedWeChat)
 
     def get_fieldsets(self, request, obj=None):
         if request.user.is_superuser:
@@ -291,11 +337,37 @@ class WhitelistAdmin(admin.ModelAdmin):
                set_startDate_4, export_to_csv]
     exclude = ('encryptedPhoneNumber', 'encryptedWeChat')
     
+    def _get_decrypted_phone(self, encrypted_value):
+        cache_key = f'decrypted_phone_{encrypted_value[:20]}'
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+        
+        try:
+            decrypted = decrypt(encrypted_value)
+            cache.set(cache_key, decrypted, 300)
+            return decrypted
+        except Exception:
+            return "解密失败"
+
+    def _get_decrypted_wechat(self, encrypted_value):
+        cache_key = f'decrypted_wechat_{encrypted_value[:20]}'
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+        
+        try:
+            decrypted = decrypt(encrypted_value)
+            cache.set(cache_key, decrypted, 300)
+            return decrypted
+        except Exception:
+            return "解密失败"
+    
     def phoneNumber(self, obj):
-       return decrypt(obj.encryptedPhoneNumber)
+        return self._get_decrypted_phone(obj.encryptedPhoneNumber)
 
     def WeChat(self, obj):
-       return decrypt(obj.encryptedWeChat)        
+        return self._get_decrypted_wechat(obj.encryptedWeChat)        
 
     def get_list_display(self, request):
         if request.user.is_superuser:
@@ -339,11 +411,37 @@ class LSUserAdmin(admin.ModelAdmin):
         "ls_user_export_fields.csv", "ls_user.csv")
     actions = [export_to_csv]
     
+    def _get_decrypted_phone(self, encrypted_value):
+        cache_key = f'decrypted_phone_{encrypted_value[:20]}'
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+        
+        try:
+            decrypted = decrypt(encrypted_value)
+            cache.set(cache_key, decrypted, 300)
+            return decrypted
+        except Exception:
+            return "解密失败"
+
+    def _get_decrypted_qq(self, encrypted_value):
+        cache_key = f'decrypted_qq_{encrypted_value[:20]}'
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+        
+        try:
+            decrypted = decrypt(encrypted_value)
+            cache.set(cache_key, decrypted, 300)
+            return decrypted
+        except Exception:
+            return "解密失败"
+    
     def phoneNumber(self, obj):
-       return decrypt(obj.encryptedPhoneNumber)
+        return self._get_decrypted_phone(obj.encryptedPhoneNumber)
 
     def qq(self, obj):
-       return decrypt(obj.encryptedQQ)
+        return self._get_decrypted_qq(obj.encryptedQQ)
 
 
     def get_model_perms(self, request):

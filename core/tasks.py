@@ -1,6 +1,8 @@
 import json
 from core.models import WebUser, Log, BannedLog
-from datetime import datetime
+from datetime import datetime, timedelta
+from django.utils import timezone
+from django.db import transaction
 from core.services import blued_msg
 
 with open("core/prod_scheduled_tasks.json") as f:
@@ -125,6 +127,22 @@ def launch_tasks(time: int):
         Log.objects.bulk_create(logs_to_create)
     if banlogs_to_create:
         BannedLog.objects.bulk_create(banlogs_to_create)
+
+
+def cleanup_old_logs(days_to_keep=15):
+    """
+    清理旧的日志记录，只保留最近 N 天的日志
+    
+    Args:
+        days_to_keep: 保留最近多少天的日志，默认 15 天
+    """
+    cutoff_date = timezone.now() - timedelta(days=days_to_keep)
+    
+    # 使用事务确保数据一致性
+    with transaction.atomic():
+        # 删除 Log 表中超过保留期的记录
+        deleted_logs_count = Log.objects.filter(time__lt=cutoff_date).delete()[0]
+    print(f"Deleted {deleted_logs_count} Log records older than {days_to_keep} days.")
                     
 # def test_tasks(time: int):
 #     # print(f"Event triggered at {datetime.now()}, with time {time}.")
