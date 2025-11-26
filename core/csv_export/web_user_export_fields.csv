@@ -4,7 +4,7 @@ group,Group
 currentDay,CurrentDay
 startDate,StartDate
 banDay,BanDay
-banReason,BanReason
+banReasonsJson,banReasonsJson
 trainCompleteNotified,TrainCompleteNotified
 surveyCompleteNotified,SurveyCompleteNotified
 score,GameScore

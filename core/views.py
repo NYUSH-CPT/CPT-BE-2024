@@ -420,17 +420,17 @@ def assign_group(request):
             currentDay = 1
             res = blued_msg.send(webUser.uuid, 22)
             if res['code'] == 200:
-                Log.create(
+                Log.objects.create(
                     user=webUser,
                     log=f"Message sent to {webUser.uuid} on task 22 successfully."
                 )
                 WebUser.objects.filter(uuid=webUser.uuid).update(banNotified=True)
-                BannedLog.create(
+                BannedLog.objects.create(
                     user=webUser,
                     log=f"[pre_survey_invalid]"
                 )
             else: 
-                Log.create(
+                Log.objects.create(
                     user=WebUser,
                     log="Message sent failed. Error message: " + res['msg']
                 )
