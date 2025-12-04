@@ -299,11 +299,11 @@ class WhitelistAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         if request.user.is_superuser:
-            return ('uuid', 'phoneNumber', 'WeChat', 'has_add_wechat', 'startDate', 'survey0')
+            return ('uuid', 'phoneNumber', 'WeChat', 'has_add_wechat', 'startDate', 'source', 'survey0')
         elif request.user.groups.filter(name="INFO").exists():
-            return ('uuid', 'phoneNumber', 'WeChat', 'has_add_wechat', 'startDate', 'survey0')
+            return ('uuid', 'phoneNumber', 'WeChat', 'has_add_wechat', 'startDate', 'source', 'survey0')
         elif request.user.groups.filter(name="RA").exists():
-            return ('uuid', 'has_add_wechat', 'startDate')
+            return ('uuid', 'has_add_wechat', 'startDate', 'source')
         else:
             return ()
         
@@ -321,20 +321,20 @@ class WhitelistAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return [
                 ("Contact Info", {'fields': ('phoneNumber', 'WeChat')}),
-                ("User Info", {"fields": ("uuid",  "has_add_wechat", "startDate", 'survey0')})]
+                ("User Info", {"fields": ("uuid",  "has_add_wechat", "startDate", 'survey0', 'source')})]
         elif request.user.groups.filter(name="INFO").exists():
             return [
                 ("Contact Info", {'fields': ('phoneNumber', 'WeChat')}),
-                ("User Info", {"fields": ("uuid", "has_add_wechat", "startDate", 'survey0')})]
+                ("User Info", {"fields": ("uuid", "has_add_wechat", "startDate", 'survey0', 'source')})]
         elif request.user.groups.filter(name="RA").exists():
-            return [("User Info", {"fields": ("uuid", "has_add_wechat", "startDate")})]
+            return [("User Info", {"fields": ("uuid", "has_add_wechat", "startDate", 'source')})]
         else:
             return []
     
 
 class LSUserAdmin(admin.ModelAdmin):
-    list_display = ('uuid', 'phoneNumber', 'qq', 'survey0')
-    readonly_fields = ('uuid', 'survey0', 'phoneNumber', 'qq')
+    list_display = ('uuid', 'startDate', 'survey0')
+    readonly_fields = ('uuid', 'survey0', 'startDate')
     export_to_csv = export_to_csv_func(
         "ls_user_export_fields.csv", "ls_user.csv")
     actions = [export_to_csv]
@@ -345,7 +345,6 @@ class LSUserAdmin(admin.ModelAdmin):
     def qq(self, obj):
        return decrypt(obj.encryptedQQ)
 
-
     def get_model_perms(self, request):
         if request.user.groups.filter(name='LS').exists() or request.user.is_superuser:
             return super().get_model_perms(request)
@@ -355,12 +354,17 @@ class LSUserAdmin(admin.ModelAdmin):
         if request.user.is_superuser or request.user.groups.filter(name="LS").exists():
             return [
                 ("Contact Info", {'fields': ('phoneNumber', 'qq')}),
-                ("User Info", {"fields": ("uuid", 'survey0')})]
+                ("User Info", {"fields": ("uuid",'startDate', 'survey0')})]
         else:
             return []
         
 class ScreenAdmin(admin.ModelAdmin):
-    list_display = ('uuid', 'valid', 'eligible', 'consent', 'submitted', 'responseId')
+    list_display = ('uuid', 'valid', 'eligible', 'consent', 'submitted', 'source', 'responseId')
+    fieldsets = [
+        ("Screening Info", {
+            'fields': ('uuid', 'valid', 'eligible', 'service', 'consent', 'submitted', 'source', 'responseId')
+        }),
+    ]
 
 
 admin.site.register(WebUser, WebUserAdmin)

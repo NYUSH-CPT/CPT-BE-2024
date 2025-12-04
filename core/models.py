@@ -198,6 +198,7 @@ class Whitelist(models.Model):
     has_add_wechat = models.BooleanField(default=False, help_text="Please set it to true after adding user's wechat")
     survey0 = models.CharField(max_length=30, null=True, blank=True)
     startDate = models.DateField(null=True, blank=True, help_text="Experiment start date")
+    source = models.IntegerField(default=0, help_text="Source of the user")
     
     def __str__(self):
         return self.uuid
@@ -227,6 +228,7 @@ class LSUser(models.Model):
     encryptedPhoneNumber = models.CharField(max_length=500, help_text="Encrypted phone number")
     encryptedQQ = models.CharField(max_length=500, help_text="Encrypted QQ number")
     survey0 = models.CharField(max_length=30, null=True, blank=True)
+    startDate = models.DateField(default=timezone.now, help_text="Experiment start date")
     
     def __str__(self):
         return f'{self.uuid}'
@@ -241,6 +243,7 @@ class Screen(models.Model):
     responseId = models.CharField(max_length=30, null=True, blank=True)
     consent = models.BooleanField(default=False, help_text="Whether the user has consented to the experiment")
     submitted = models.BooleanField(default=False, help_text="Whether the user has submitted the information")
+    source = models.IntegerField(default=0, help_text="Source of the user")
     
     def __str__(self):
         return f'{self.uuid}'
