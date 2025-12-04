@@ -23,9 +23,6 @@ sleep 3
 
 # Start a new container with the latest image
 docker run  \
-  --memory=1.2g \
-  --memory-swap=1.2g \
-  --restart=always \
   -v /home/ubuntu/staticfiles:/app/staticfiles \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
@@ -45,8 +42,6 @@ docker exec cpt-be python manage.py collectstatic --noinput
 
 # Start a new crontab container with the latest image
 docker run  \
-  --memory=512m \
-  --memory-swap=512m \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
   -e "DB_NAME=$DB_NAME" \
