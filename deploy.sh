@@ -1,28 +1,43 @@
 #!/bin/bash
+set -e
 
+# 拉取后端镜像
 docker pull ghcr.nju.edu.cn/nyush-cpt/cpt-be-2024@$IMAGE_SHA
 
-# Stop the current container
-if [ "$(docker ps -q -f name=cpt-be)" ]; then
+echo "Stopping old containers if they exist..."
+
+# 停掉老的单一后端容器（兼容历史）
+if [ "$(docker ps -q -f name=cpt-be$)" ]; then
     docker stop cpt-be || true
     docker rm cpt-be || true
 else
-    echo "Container cpt-be does not exist. Creating a new one."
+    echo "Container cpt-be does not exist."
 fi
 
-# Stop crontab container
-if [ "$(docker ps -q -f name=cpt-be-crontab)" ]; then
+# 停掉新的 api/admin 容器（如果之前已经有）
+if [ "$(docker ps -q -f name=cpt-be-api$)" ]; then
+    docker stop cpt-be-api || true
+    docker rm cpt-be-api || true
+fi
+
+if [ "$(docker ps -q -f name=cpt-be-admin$)" ]; then
+    docker stop cpt-be-admin || true
+    docker rm cpt-be-admin || true
+fi
+
+# 停掉 crontab 容器
+if [ "$(docker ps -q -f name=cpt-be-crontab$)" ]; then
     docker stop cpt-be-crontab || true
     docker rm cpt-be-crontab || true
 else
-    echo "Container cpt-be-crontab does not exist. Creating a new one."
+    echo "Container cpt-be-crontab does not exist."
 fi
-
 
 sleep 3
 
-# Start a new container with the latest image
-docker run  \
+echo "Starting API container (cpt-be-api)..."
+
+docker run \
   -v /home/ubuntu/staticfiles:/app/staticfiles \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
@@ -35,13 +50,19 @@ docker run  \
   -e "BLUED_API=$BLUED_API" \
   -e "DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY" \
   -e "QR_JWT_SECRET=$QR_JWT_SECRET" \
-  -d --name cpt-be -p 8000:8000 ghcr.nju.edu.cn/nyush-cpt/cpt-be-2024@$IMAGE_SHA
+  -d --name cpt-be-api -p 8000:8000 \
+  ghcr.nju.edu.cn/nyush-cpt/cpt-be-2024@$IMAGE_SHA \
+  uvicorn CPTBackend.asgi:application --host 0.0.0.0 --port 8000 --workers 2
 
-echo "Running collectstatic..."
-docker exec cpt-be python manage.py collectstatic --noinput
+echo "Running collectstatic on cpt-be-api..."
+docker exec cpt-be-api python manage.py collectstatic --noinput
 
-# Start a new crontab container with the latest image
-docker run  \
+echo "Starting Admin container (cpt-be-admin)..."
+
+# Admin 容器：只给你和 RA/INFO 用，1 个 worker 就够
+# 这里不覆盖 CMD，直接用 Dockerfile 里的 --workers 1
+docker run \
+  -v /home/ubuntu/staticfiles:/app/staticfiles \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
   -e "DB_NAME=$DB_NAME" \
@@ -52,8 +73,30 @@ docker run  \
   -e "WEB_URL=$WEB_URL" \
   -e "BLUED_API=$BLUED_API" \
   -e "DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY" \
-  -d --name cpt-be-crontab ghcr.nju.edu.cn/nyush-cpt/cpt-be-2024@$IMAGE_SHA \
+  -e "QR_JWT_SECRET=$QR_JWT_SECRET" \
+  -d --name cpt-be-admin -p 8001:8000 \
+  ghcr.nju.edu.cn/nyush-cpt/cpt-be-2024@$IMAGE_SHA
+
+echo "Starting crontab container (cpt-be-crontab)..."
+
+# 定时任务容器：逻辑不变
+docker run \
+  -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
+  -e "DB_HOST=$DB_HOST" \
+  -e "DB_NAME=$DB_NAME" \
+  -e "DB_PORT=$DB_PORT" \
+  -e "DB_USER=$DB_USER" \
+  -e "DB_PASSWORD=$DB_PASSWORD" \
+  -e "AES_KEY=$AES_KEY" \
+  -e "WEB_URL=$WEB_URL" \
+  -e "BLUED_API=$BLUED_API" \
+  -e "DJANGO_SECRET_KEY=$DJANGO_SECRET_KEY" \
+  -d --name cpt-be-crontab \
+  ghcr.nju.edu.cn/nyush-cpt/cpt-be-2024@$IMAGE_SHA \
   /usr/sbin/crond -f
 
-
+echo "Pruning unused docker resources..."
 docker system prune -f
+
+echo "Deploy finished. Running containers:"
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
