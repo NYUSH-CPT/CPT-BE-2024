@@ -115,6 +115,11 @@ DATABASES = {
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', 3306),
         'CONN_MAX_AGE': 600,
+        'OPTIONS': {
+            'ssl': {
+                'disabled': True
+            }
+        }
     }
 }
 
