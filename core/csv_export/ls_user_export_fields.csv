@@ -3,3 +3,4 @@ uuid,Uuid
 encryptedPhoneNumber,PhoneNumber
 encryptedQQ,QQ
 survey0,ResponseId
+startDate,StartDate
