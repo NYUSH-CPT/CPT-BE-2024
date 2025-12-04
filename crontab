@@ -8,7 +8,3 @@
 # Django Production
 0 0 * * * cd /app && python3 manage.py shell -c "from core.tasks import launch_tasks; launch_tasks(8)"
 0 12 * * * cd /app && python3 manage.py shell -c "from core.tasks import launch_tasks; launch_tasks(20)"
-
-# Cleanup old logs - keep only last 15 days
-# Run daily at 2:00 AM to avoid conflict with other tasks
-# 0 2 */5 * * cd /app && python3 manage.py shell -c "from core.tasks import cleanup_old_logs; cleanup_old_logs(15)"

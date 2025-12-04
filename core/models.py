@@ -169,8 +169,8 @@ class WebUser(models.Model):
             # Criteria 3: Overdue
             if self.currentDay <= 9:
                 startDate = datetime.combine(self.startDate, datetime.min.time())
-                currentTaskStartDate = startDate + timedelta(days=int(self.currentDay )- 1)  # minimum date to start current task
-                currentTaskEndDate = currentTaskStartDate + timedelta(days=2) + timedelta(hours=4)  # maximum date to finish current task
+                currenrtTaskStartDate = startDate + timedelta(days=self.currentDay - 1)  # minimum date to start current task
+                currentTaskEndDate = currenrtTaskStartDate + timedelta(days=2) + timedelta(hours=4)  # maximum date to finish current task
                 if datetime.now() > currentTaskEndDate:
                     add_reason("task_not_done")
             # Criteria 4: Game

@@ -114,7 +114,6 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', 3306),
-        'CONN_MAX_AGE': 600
     }
 }
 
@@ -156,30 +155,10 @@ TIME_ZONE = 'Asia/Hong_Kong'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# WhiteNoise configuration
-# Use finders mode to avoid scanning all files at startup
-# This prevents FileNotFoundError when some files are missing
-WHITENOISE_USE_FINDERS = True
-WHITENOISE_AUTOREFRESH = True
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Cache configuration
-# 使用本地内存缓存（适合单服务器部署）
-# 如果需要多服务器部署，应使用 Redis 或 Memcached
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-        'OPTIONS': {
-            'MAX_ENTRIES': 10000,  # 最大缓存条目数
-            'CULL_FREQUENCY': 3,   # 当达到 MAX_ENTRIES 时，删除 1/3 的条目
-        }
-    }
-}
 
 LOGGING = {
     'version': 1,
