@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-# 拉取后端镜像
 docker pull ghcr.nju.edu.cn/nyush-cpt/cpt-be-2024@$IMAGE_SHA
 
 echo "Stopping old containers if they exist..."
@@ -38,6 +37,9 @@ sleep 3
 echo "Starting API container (cpt-be-api)..."
 
 docker run \
+  --restart always \
+  --memory=900m \
+  --cpus="1.4" \
   -v /home/ubuntu/staticfiles:/app/staticfiles \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
@@ -54,14 +56,15 @@ docker run \
   ghcr.nju.edu.cn/nyush-cpt/cpt-be-2024@$IMAGE_SHA \
   uvicorn CPTBackend.asgi:application --host 0.0.0.0 --port 8000 --workers 2
 
-echo "Running collectstatic on cpt-be-api..."
 docker exec cpt-be-api python manage.py collectstatic --noinput
 
-echo "Starting Admin container (cpt-be-admin)..."
 
 # Admin 容器：只给你和 RA/INFO 用，1 个 worker 就够
 # 这里不覆盖 CMD，直接用 Dockerfile 里的 --workers 1
 docker run \
+  --restart always \
+  --memory=500m \
+  --cpus="0.6" \
   -v /home/ubuntu/staticfiles:/app/staticfiles \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
@@ -79,8 +82,10 @@ docker run \
 
 echo "Starting crontab container (cpt-be-crontab)..."
 
-# 定时任务容器：逻辑不变
 docker run \
+  --restart always \
+  --memory=200m \
+  --cpus="0.3" \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
   -e "DB_NAME=$DB_NAME" \
@@ -98,5 +103,4 @@ docker run \
 echo "Pruning unused docker resources..."
 docker system prune -f
 
-echo "Deploy finished. Running containers:"
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}\t{{.RunningFor}}"
