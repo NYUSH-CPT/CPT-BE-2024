@@ -26,4 +26,4 @@ adduser -S --shell /bin/bash --ingroup docker vscode
 EOF
 # install Docker tools (cli, buildx, compose)
 COPY --from=gloursdocker/docker / /
-CMD ["uvicorn", "CPTBackend.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+CMD ["uvicorn", "CPTBackend.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

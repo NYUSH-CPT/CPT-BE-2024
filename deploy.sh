@@ -38,6 +38,7 @@ echo "Starting API container (cpt-be-api)..."
 
 docker run \
   --restart always \
+  --memory=2.5g --memory-reservation=2g \
   -v /home/ubuntu/staticfiles:/app/staticfiles \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
@@ -59,6 +60,7 @@ docker exec cpt-be-api python manage.py collectstatic --noinput
 
 docker run \
   --restart always \
+  --memory=2g --memory-reservation=1.5g \
   -v /home/ubuntu/staticfiles:/app/staticfiles \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
@@ -78,6 +80,7 @@ echo "Starting crontab container (cpt-be-crontab)..."
 
 docker run \
   --restart always \
+  --memory=0.5g \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
   -e "DB_NAME=$DB_NAME" \
