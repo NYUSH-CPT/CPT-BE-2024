@@ -334,7 +334,7 @@ def collect_info(request):
     encryptedWeChat = encrypt(WeChat)
     
     if WeChat:
-        if not Screen.objects.filter(uuid=uuid).exists()\
+        if not Whitelist.objects.filter(uuid=uuid).exists() and not LSUser.objects.filter(uuid=uuid).exists()\
             and not Whitelist.objects.filter(encryptedPhoneNumber=encryptedPhoneNumber).exists()\
             and not Whitelist.objects.filter(encryptedWeChat=encryptedWeChat).exists():
             screen_obj = Screen.objects.get(uuid=uuid)
@@ -351,7 +351,7 @@ def collect_info(request):
         else:
             return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
     else:
-        if not Screen.objects.filter(uuid=uuid).exists()\
+        if not Whitelist.objects.filter(uuid=uuid).exists() and not LSUser.objects.filter(uuid=uuid).exists()\
             and not LSUser.objects.filter(encryptedPhoneNumber=encryptedPhoneNumber).exists()\
             and not LSUser.objects.filter(encryptedQQ=encryptedQQ).exists():
             LSUser.objects.create(uuid=uuid, encryptedPhoneNumber=encryptedPhoneNumber, encryptedQQ=encryptedQQ, survey0=responseId)
