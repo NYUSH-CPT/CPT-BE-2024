@@ -38,8 +38,6 @@ echo "Starting API container (cpt-be-api)..."
 
 docker run \
   --restart always \
-  --memory=900m \
-  --cpus="1.4" \
   -v /home/ubuntu/staticfiles:/app/staticfiles \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
