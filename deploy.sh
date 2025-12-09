@@ -59,12 +59,8 @@ docker run \
 docker exec cpt-be-api python manage.py collectstatic --noinput
 
 
-# Admin 容器：只给你和 RA/INFO 用，1 个 worker 就够
-# 这里不覆盖 CMD，直接用 Dockerfile 里的 --workers 1
 docker run \
   --restart always \
-  --memory=700m \
-  --cpus="0.6" \
   -v /home/ubuntu/staticfiles:/app/staticfiles \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
@@ -84,8 +80,6 @@ echo "Starting crontab container (cpt-be-crontab)..."
 
 docker run \
   --restart always \
-  --memory=200m \
-  --cpus="0.3" \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
   -e "DB_NAME=$DB_NAME" \

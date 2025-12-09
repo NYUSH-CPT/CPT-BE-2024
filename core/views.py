@@ -369,7 +369,22 @@ def collect_info(request):
             return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
             
     return Response({"status": "Success", "message": "成功提交"}, status=status.HTTP_200_OK)
-    
+
+
+@api_view(["POST"])
+@catch_exceptions
+def collect_decline(request):
+    """
+    用户在 collect 页选择“不想参与研究”，
+    只更新 Screen.consent=False, submitted=True
+    """
+    body = json.loads(request.body)
+    uuid = body.get("uuid")
+    if not uuid:
+        return Response({"status": "Fail", "message": "缺少 uuid"}, status=status.HTTP_400_BAD_REQUEST)
+    Screen.objects.filter(uuid=uuid).update(consent=False, submitted=True)
+    return Response({"status": "Success", "message": "已记录为不参与研究"}, status=status.HTTP_200_OK)
+
     
 @api_view(["POST", "GET"])
 @catch_exceptions

@@ -16,6 +16,7 @@ urlpatterns = [
     path('qualtrics_submission', views.qualtrics_submission, name='qualtrics_submission'),
     path('key', views.key, name="key"),
     path('collect_info', views.collect_info, name="collect_info"),
+    path('collect_decline', views.collect_decline, name="collect_decline"),
     path('signup', views.signup, name="signup"),
     path('reset_password', views.reset_password, name="reset_password"),
     path('screen_record', views.screen_record, name="screen_record"),
