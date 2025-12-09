@@ -63,7 +63,7 @@ docker exec cpt-be-api python manage.py collectstatic --noinput
 # 这里不覆盖 CMD，直接用 Dockerfile 里的 --workers 1
 docker run \
   --restart always \
-  --memory=500m \
+  --memory=700m \
   --cpus="0.6" \
   -v /home/ubuntu/staticfiles:/app/staticfiles \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \

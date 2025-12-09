@@ -334,7 +334,7 @@ class WhitelistAdmin(admin.ModelAdmin):
 
 class LSUserAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'startDate', 'survey0')
-    readonly_fields = ('uuid', 'survey0', 'startDate')
+    readonly_fields = ('uuid', 'survey0', 'startDate', 'phoneNumber', 'qq')
     export_to_csv = export_to_csv_func(
         "ls_user_export_fields.csv", "ls_user.csv")
     actions = [export_to_csv]

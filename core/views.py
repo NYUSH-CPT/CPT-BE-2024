@@ -314,6 +314,15 @@ def key(request):
     if not Screen.objects.filter(uuid=key_param).exists():
         return Response(status=status.HTTP_404_NOT_FOUND)
     
+    has_lsuser = LSUser.objects.filter(uuid=key_param).exists()
+    has_whitelist = Whitelist.objects.filter(uuid=key_param).exists()
+    if not has_lsuser and not has_whitelist:
+        # 用一个很明确的标记告诉前端：这个人需要先去 collect
+        return Response(
+            {"next": "collect"},
+            status=status.HTTP_200_OK,
+        )
+    
     return Response(status=status.HTTP_200_OK)
 
 
