@@ -120,10 +120,14 @@ class WebUser(models.Model):
     
     def update_date_after_survey_due(self):
         now = datetime.now().date()
-        survey_days = {1: (1, -2), 23: (39, 6), 39: (99, 6), 99: (100, 6)}
+        current_day = (now - self.startDate).days + 1
+        if current_day <= 0:
+            return
+        
+        survey_days = {1: (1, -1), 23: (39, 7), 39: (99, 7), 99: (100, 7)}
         for day in survey_days:
             next_day, window = survey_days[day]
-            if (now - self.startDate).days > day + window and self.currentDay <= day:
+            if current_day >= day + window and self.currentDay <= day:
                 setattr(self, f'survey{day}IsValid', "False")
                 setattr(self, f'survey{day}', "Overdue")
                 self.currentDay = next_day
