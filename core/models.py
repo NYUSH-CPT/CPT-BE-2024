@@ -119,7 +119,7 @@ class WebUser(models.Model):
         return invalid_count
     
     def update_date_after_survey_due(self):
-        now = datetime.now().date()
+        now = timezone.localdate()
         current_day = (now - self.startDate).days + 1
         if current_day <= 0:
             return

@@ -2,6 +2,7 @@ import json
 from core.models import WebUser, Log, BannedLog
 from datetime import datetime
 from core.services import blued_msg
+from django.utils import timezone
 
 with open("core/prod_scheduled_tasks.json") as f:
     tasks = json.load(f)
@@ -31,7 +32,7 @@ def survey_anchor_for(day: int) -> int | None:
 def launch_tasks(time: int):
     log = Log(
         user=None,
-        log=f"Event triggered at {datetime.now()}, with time {time}."
+        log=f"Event triggered at {timezone.localtime()}, with time {time}."
     )
     
     logs_to_create = [log]
