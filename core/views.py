@@ -16,6 +16,7 @@ from django.contrib.auth.tokens import default_token_generator
 import jwt
 import os
 from core.services import blued_msg
+from django.db import transaction
 
 import logging
 logger = logging.getLogger('django')
@@ -342,32 +343,34 @@ def collect_info(request):
     encryptedQQ = encrypt(QQ)
     encryptedWeChat = encrypt(WeChat)
     
-    if WeChat:
-        if not Whitelist.objects.filter(uuid=uuid).exists() and not LSUser.objects.filter(uuid=uuid).exists()\
-            and not Whitelist.objects.filter(encryptedPhoneNumber=encryptedPhoneNumber).exists()\
-            and not Whitelist.objects.filter(encryptedWeChat=encryptedWeChat).exists():
-            screen_obj = Screen.objects.get(uuid=uuid)
-            screen_obj.consent = True
-            screen_obj.submitted = True
-            screen_obj.save()
-            Whitelist.objects.create(
-                uuid=uuid,
-                encryptedPhoneNumber=encryptedPhoneNumber,
-                encryptedWeChat=encryptedWeChat,
-                survey0=responseId,
-                source=screen_obj.source
-            )
+    with transaction.atomic():
+        screen_obj = Screen.objects.select_for_update().get(uuid=uuid)
+        
+        if WeChat:
+            if not Whitelist.objects.filter(uuid=uuid).exists() and not LSUser.objects.filter(uuid=uuid).exists()\
+                and not Whitelist.objects.filter(encryptedPhoneNumber=encryptedPhoneNumber).exists()\
+                and not Whitelist.objects.filter(encryptedWeChat=encryptedWeChat).exists():
+                screen_obj.consent = True
+                screen_obj.submitted = True
+                screen_obj.save(update_fields=["consent", "submitted"])
+                Whitelist.objects.create(
+                    uuid=uuid,
+                    encryptedPhoneNumber=encryptedPhoneNumber,
+                    encryptedWeChat=encryptedWeChat,
+                    survey0=responseId,
+                    source=screen_obj.source
+                )
+            else:
+                return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        if not Whitelist.objects.filter(uuid=uuid).exists() and not LSUser.objects.filter(uuid=uuid).exists()\
-            and not LSUser.objects.filter(encryptedPhoneNumber=encryptedPhoneNumber).exists()\
-            and not LSUser.objects.filter(encryptedQQ=encryptedQQ).exists():
-            LSUser.objects.create(uuid=uuid, encryptedPhoneNumber=encryptedPhoneNumber, encryptedQQ=encryptedQQ, survey0=responseId)
-            Screen.objects.filter(uuid=uuid).update(submitted=True)
-        else:
-            return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
-            
+            if not Whitelist.objects.filter(uuid=uuid).exists() and not LSUser.objects.filter(uuid=uuid).exists()\
+                and not LSUser.objects.filter(encryptedPhoneNumber=encryptedPhoneNumber).exists()\
+                and not LSUser.objects.filter(encryptedQQ=encryptedQQ).exists():
+                LSUser.objects.create(uuid=uuid, encryptedPhoneNumber=encryptedPhoneNumber, encryptedQQ=encryptedQQ, survey0=responseId)
+                Screen.objects.filter(uuid=uuid).update(submitted=True)
+            else:
+                return Response({"status": "Fail", "message": "用户已存在"}, status=status.HTTP_400_BAD_REQUEST)
+                
     return Response({"status": "Success", "message": "成功提交"}, status=status.HTTP_200_OK)
 
 
