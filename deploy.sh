@@ -80,7 +80,7 @@ echo "Starting crontab container (cpt-be-crontab)..."
 
 docker run \
   --restart always \
-  --memory=0.5g \
+  --memory=2g \
   -e "CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS" \
   -e "DB_HOST=$DB_HOST" \
   -e "DB_NAME=$DB_NAME" \
