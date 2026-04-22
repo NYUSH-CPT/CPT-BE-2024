@@ -300,20 +300,16 @@ class WhitelistAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         if request.user.is_superuser:
             return ('uuid', 'phoneNumber', 'WeChat', 'has_add_wechat', 'startDate', 'source', 'survey0')
-        elif request.user.groups.filter(name="INFO").exists():
+        elif request.user.groups.filter(name="INFO").exists() or request.user.groups.filter(name="RA").exists():
             return ('uuid', 'phoneNumber', 'WeChat', 'has_add_wechat', 'startDate', 'source', 'survey0')
-        elif request.user.groups.filter(name="RA").exists():
-            return ('uuid', 'has_add_wechat', 'startDate', 'source')
         else:
             return ()
         
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:
             return ['phoneNumber', 'WeChat']
-        elif request.user.groups.filter(name="INFO").exists():
+        elif request.user.groups.filter(name="INFO").exists() or request.user.groups.filter(name="RA").exists():
             return ['phoneNumber', 'WeChat', 'uuid', 'survey0']
-        elif request.user.groups.filter(name="RA").exists():
-            return ['uuid']
         else:
             return []
         
@@ -322,12 +318,10 @@ class WhitelistAdmin(admin.ModelAdmin):
             return [
                 ("Contact Info", {'fields': ('phoneNumber', 'WeChat')}),
                 ("User Info", {"fields": ("uuid",  "has_add_wechat", "startDate", 'survey0', 'source')})]
-        elif request.user.groups.filter(name="INFO").exists():
+        elif request.user.groups.filter(name="INFO").exists() or request.user.groups.filter(name="RA").exists():
             return [
                 ("Contact Info", {'fields': ('phoneNumber', 'WeChat')}),
                 ("User Info", {"fields": ("uuid", "has_add_wechat", "startDate", 'survey0', 'source')})]
-        elif request.user.groups.filter(name="RA").exists():
-            return [("User Info", {"fields": ("uuid", "has_add_wechat", "startDate", 'source')})]
         else:
             return []
     
